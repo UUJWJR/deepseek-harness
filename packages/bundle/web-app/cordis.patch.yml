@@ -84,6 +84,11 @@
     - id: session-stats
       name: '@deepseek-ai/dsh-session-stats'
 
+    # Trusted-skill permission window (ADR 0007/0008): auto-approve tool calls
+    # during a deployment-trusted skill. Empty by default; a deployment fills it.
+    - id: trusted-skill-window
+      name: '@deepseek-ai/dsh-trusted-skill-window'
+
     # Resolve bind host, SSH launch, and display once at boot, then mount the
     # matching dual-face directory picker. Mount -native or -browse directly in
     # an overlay to pin the interaction.

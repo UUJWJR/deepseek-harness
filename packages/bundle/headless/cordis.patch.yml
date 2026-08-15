@@ -33,3 +33,8 @@
       inject: [headlessStartup]
       config:
         task: !!js ctx.headlessStartup.task
+
+    # Unattended permission (ADR 0011): deny tool escalation outside a skill's
+    # declared level. Empty by default; a scheduled profile fills the map.
+    - id: unattended-permission
+      name: '@deepseek-ai/dsh-unattended-permission'
