@@ -309,6 +309,11 @@ function checkWorkspace({ dir, manifest }: WorkspaceManifest): string[] {
     if (manifest.version !== repositoryVersion) {
       errors.push(`${label}: package.json version must match root version ${repositoryVersion ?? '(missing)'}`)
     }
+    if ((hasTypertRemoteNavigation(manifest)
+      || hasExportPair(manifest, './typert', './lib/typert.host.d.ts', './lib/typert.host.js'))
+      && !manifest.dependencies?.zod) {
+      errors.push(`${label}: generated typert host/remote codec files import { z } from 'zod' — declare "zod" in dependencies`)
+    }
     if (manifest.type !== 'module') {
       errors.push(`${label}: package.json must set "type": "module"`)
     }
