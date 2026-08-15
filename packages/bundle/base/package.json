@@ -91,6 +91,8 @@
     "@deepseek-ai/dsh-system-prompt": "workspace:^",
     "@deepseek-ai/dsh-jobs-local": "workspace:^",
     "@deepseek-ai/dsh-kb-agent": "workspace:^",
+    "@deepseek-ai/dsh-report-local": "workspace:^",
+    "@deepseek-ai/dsh-tool-report": "workspace:^",
     "@deepseek-ai/dsh-kb-sqlite": "workspace:^",
     "@deepseek-ai/dsh-tool-call-timeout-policy": "workspace:^",
     "@deepseek-ai/dsh-token-meter": "workspace:^",

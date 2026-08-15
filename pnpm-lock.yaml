@@ -1076,6 +1076,9 @@ importers:
       '@deepseek-ai/dsh-repeat-tool-reminder':
         specifier: workspace:^
         version: link:../../guard/repeat-tool-reminder
+      '@deepseek-ai/dsh-report-local':
+        specifier: workspace:^
+        version: link:../../report/report-local
       '@deepseek-ai/dsh-sandbox-local':
         specifier: workspace:^
         version: link:../../sandbox/sandbox-local
@@ -1169,6 +1172,9 @@ importers:
       '@deepseek-ai/dsh-tool-ralph':
         specifier: workspace:^
         version: link:../../workflow/tool-ralph
+      '@deepseek-ai/dsh-tool-report':
+        specifier: workspace:^
+        version: link:../../report/tool-report
       '@deepseek-ai/dsh-tool-skill':
         specifier: workspace:^
         version: link:../../skill/tool-skill
@@ -5754,6 +5760,21 @@ importers:
       '@deepseek-ai/dsh-report':
         specifier: workspace:^
         version: link:../report
+
+  packages/report/tool-report:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-report':
+        specifier: workspace:^
+        version: link:../report
+      '@deepseek-ai/dsh-tools':
+        specifier: workspace:^
+        version: link:../../core/tools
 
   packages/runtime-diagnostics/invariants:
     dependencies:

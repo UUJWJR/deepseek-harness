@@ -132,6 +132,16 @@
       config:
         provider: spawn
 
+    # Display-zone gallery: a filesystem report store and the model-facing
+    # publish/list tools. The gallery UI is a separate client surface.
+    - id: report-local
+      name: '@deepseek-ai/dsh-report-local'
+      config:
+        root: !!js dshHomePath('reports')
+
+    - id: tool-report
+      name: '@deepseek-ai/dsh-tool-report'
+
     # Shared projection registry: subagent catalog identity (mode/label) folds
     # through its registered units, so the `list_agents` surface below fails
     # loud without it; web layers reuse this same mount for list rows.
