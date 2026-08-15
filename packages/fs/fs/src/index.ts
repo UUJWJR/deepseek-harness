@@ -29,6 +29,7 @@ export {
   FsTargetKey,
   FsVersion,
 } from './types.ts'
+export { foldAncestors } from './bulk.ts'
 export type {
   FsEditOutcome,
   FsEditRequest,
