@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
+import { ReportId } from '@deepseek-ai/dsh-report'
 import { LocalFileSystem } from '@deepseek-ai/dsh-fs-local'
 import LocalReportRegistry from '@deepseek-ai/dsh-report-local'
 
@@ -50,5 +51,16 @@ describe('LocalReportRegistry', () => {
     expect(await ctx.reports.list()).toHaveLength(2)
     expect(await ctx.reports.list({ tag: 'x' })).toHaveLength(1)
     expect(await ctx.reports.tags()).toEqual(['x', 'y'])
+  })
+
+  it('reads a published report body and rejects a missing id', async () => {
+    await writeFile(join(sourceDir, 'note.md'), '正文内容')
+    const { report } = await ctx.reports.publish({ source: { workspace: 'w', path: 'note.md' } })
+
+    const read = await ctx.reports.read({ id: report.id })
+    expect(read.report.id).toBe(report.id)
+    expect(read.content).toBe('正文内容')
+
+    await expect(ctx.reports.read({ id: ReportId('missing') })).rejects.toMatchObject({ code: 'REPORT_NOT_FOUND' })
   })
 })

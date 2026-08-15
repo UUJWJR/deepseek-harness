@@ -21,6 +21,11 @@ export interface ReportGalleryInjected {
   }
   /** Load the gallery once, on first open. */
   ensure: () => Promise<void>
+  /**
+   * Read one report's copied body through the Remote.
+   * @param id - the published-report id to read.
+   */
+  read: (id: string) => Promise<string>
 }
 
 /** Full props of the gallery footer-action entry. */

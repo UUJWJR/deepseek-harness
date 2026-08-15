@@ -11,6 +11,7 @@ Source: [`packages/report/report/src/types.ts`](../../packages/report/report/src
 - **report** — a published copy of one source file, carrying an opaque id, the source it was copied from, tags, and the publication epoch.
 - **source** — the dedup key: a workspace plus a workspace-relative path identifying the file copied at publish time.
 - **tag** — an optional string attached at publish time; `list` narrows to one tag.
+- **body** — the copied file's UTF-8 content, read back through `read` for a gallery preview.
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -47,6 +48,13 @@ abstract list(request?: ReportListRequest): Promise<readonly Report[]>
  * @returns the tags in first-seen order.
  */
 abstract tags(): Promise<readonly string[]>
+
+/**
+ * Read one published report's copied body.
+ * @param request - the report id to read.
+ * @returns the report and its copied file content.
+ */
+abstract read(request: ReportReadRequest): Promise<ReportReadResult>
 ```
 
 Source: [`packages/report/report/src/index.ts:28`](../../packages/report/report/src/index.ts)

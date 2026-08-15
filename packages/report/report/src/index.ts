@@ -8,11 +8,11 @@
  */
 
 import { Context, Service } from '@deepseek-ai/cordis'
-import type { PublishRequest, PublishResult, Report, ReportListRequest } from './types.ts'
+import type { PublishRequest, PublishResult, Report, ReportListRequest, ReportReadRequest, ReportReadResult } from './types.ts'
 
 export type * from './types.ts'
 export { ReportError, ReportId } from './types.ts'
-export type { ReportListRequest } from './types.ts'
+export type { ReportListRequest, ReportReadRequest, ReportReadResult } from './types.ts'
 export { renderMarkdownLite } from './markdown-lite.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -50,6 +50,13 @@ export abstract class ReportRegistry extends Service {
    * @returns the tags in first-seen order.
    */
   abstract tags(): Promise<readonly string[]>
+
+  /**
+   * Read one published report's copied body.
+   * @param request - the report id to read.
+   * @returns the report and its copied file content.
+   */
+  abstract read(request: ReportReadRequest): Promise<ReportReadResult>
 }
 
 export default ReportRegistry

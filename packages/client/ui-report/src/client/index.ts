@@ -50,6 +50,7 @@ export function apply(ctx: ClientContext): void {
       inject: (): ReportGalleryInjected => ({
         hooks: { gallery: controller },
         ensure: () => controller.ensure(),
+        read: id => controller.read(id),
       }),
     }, ReportGalleryAction)
     return () => {

@@ -11,6 +11,7 @@
 - **report（报告）** — 一份源文件的已发布副本，带不透明 id、被复制的源、标签与发布时间戳。
 - **source（源）** — 去重键：一个工作区加一个工作区相对路径，标识发布时复制的文件。
 - **tag（标签）** — 发布时附加的可选字符串；`list` 可按单个标签过滤。
+- **body（正文）** — 所复制文件的 UTF-8 内容，通过 `read` 读回用于画廊预览。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -47,6 +48,13 @@ abstract list(request?: ReportListRequest): Promise<readonly Report[]>
  * @returns the tags in first-seen order.
  */
 abstract tags(): Promise<readonly string[]>
+
+/**
+ * Read one published report's copied body.
+ * @param request - the report id to read.
+ * @returns the report and its copied file content.
+ */
+abstract read(request: ReportReadRequest): Promise<ReportReadResult>
 ```
 
 Source: [`packages/report/report/src/index.ts:28`](../../packages/report/report/src/index.ts)

@@ -8,13 +8,14 @@
 
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
-import type { Report } from '@deepseek-ai/dsh-report/types'
+import type { Report, ReportId, ReportReadRequest, ReportReadResult } from '@deepseek-ai/dsh-report/types'
 import type { ReportView } from './report-view.ts'
 
 /** The Remote calls the gallery needs. */
 export interface ReportRemote {
   list: () => Promise<RemoteResult<readonly Report[]>>
   tags: () => Promise<RemoteResult<readonly string[]>>
+  read: (request: ReportReadRequest) => Promise<RemoteResult<ReportReadResult>>
 }
 
 /** Load state of the one read that seeds the whole gallery. */
@@ -73,6 +74,17 @@ export class ReportController implements HostObservable<ReportGalleryView> {
   ensure(): Promise<void> {
     if (this.view.status === 'ready') return Promise.resolve()
     return this.refresh()
+  }
+
+  /**
+   * Read one report's copied body through the Remote and unwrap the carrier.
+   * @param id - the published-report id to read.
+   * @returns the report's UTF-8 content; rejects on a carrier or business failure.
+   */
+  async read(id: string): Promise<string> {
+    const result = await this.remote.read({ id: id as ReportId })
+    if (!result.ok) throw new Error(result.error.message)
+    return result.value.content
   }
 
   /** Re-read the authoritative list, collapsing concurrent callers onto one in-flight read. */

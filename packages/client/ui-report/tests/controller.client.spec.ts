@@ -17,11 +17,17 @@ const reports: Report[] = [
   { id: ReportId('r2'), source: { workspace: 'w', path: 'b.md' }, tags: ['分析', '通报'], publishedAt: 2 },
 ]
 
+/** A read stub every mock shares: returns the report body for r1. */
+function readStub() {
+  return async () => ok({ report: reports[0] as Report, content: 'body' })
+}
+
 describe('ReportController', () => {
   it('loads reports and tags into a ready view', async () => {
     const remote: ReportRemote = {
       list: async () => ok(reports),
       tags: async () => ok(['分析', '通报']),
+      read: readStub(),
     }
     const controller = new ReportController(remote)
     const statuses: string[] = []
@@ -43,6 +49,7 @@ describe('ReportController', () => {
     const remote: ReportRemote = {
       list: async () => { calls += 1; return fail('carrier', 'down') },
       tags: async () => ok([]),
+      read: readStub(),
     }
     const controller = new ReportController(remote)
 
@@ -59,11 +66,24 @@ describe('ReportController', () => {
     const remote: ReportRemote = {
       list: async () => { calls += 1; return ok(reports) },
       tags: async () => ok([]),
+      read: readStub(),
     }
     const controller = new ReportController(remote)
 
     await Promise.all([controller.ensure(), controller.ensure()])
     expect(calls).toBe(1)
     expect(controller.getSnapshot().status).toBe('ready')
+  })
+
+  it('reads one report body and rejects a carrier failure', async () => {
+    const remote: ReportRemote = {
+      list: async () => ok(reports),
+      tags: async () => ok([]),
+      read: async request => (request.id === ReportId('r1') ? ok({ report: reports[0] as Report, content: 'hello' }) : fail('carrier', 'missing')),
+    }
+    const controller = new ReportController(remote)
+
+    await expect(controller.read('r1')).resolves.toBe('hello')
+    await expect(controller.read('missing')).rejects.toThrow('missing')
   })
 })

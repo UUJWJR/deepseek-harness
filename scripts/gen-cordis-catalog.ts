@@ -486,6 +486,8 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
   ReportSource: 'report.md',
   Report: 'report.md',
   ReportListRequest: 'report.md',
+  ReportReadRequest: 'report.md',
+  ReportReadResult: 'report.md',
   PublishRequest: 'report.md',
   PublishResult: 'report.md',
   TypertContribution: 'invariants.md',

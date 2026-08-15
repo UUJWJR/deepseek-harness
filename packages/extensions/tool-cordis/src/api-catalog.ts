@@ -1035,6 +1035,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [],
         returns: 'the tags in first-seen order.',
       },
+      {
+        signature: 'abstract read(request: ReportReadRequest): Promise<ReportReadResult>',
+        description: 'Read one published report\'s copied body.',
+        parameters: [{ name: 'request', description: 'the report id to read.' }],
+        returns: 'the report and its copied file content.',
+      },
     ],
   },
   {
@@ -3678,6 +3684,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ReportListRequest',
     declaration: 'export interface ReportListRequest {\n    tag?: string;\n}',
+  },
+  {
+    name: 'ReportReadRequest',
+    declaration: 'export interface ReportReadRequest {\n    id: ReportId;\n}',
+  },
+  {
+    name: 'ReportReadResult',
+    declaration: 'export interface ReportReadResult {\n    report: Report;\n    content: string;\n}',
   },
   {
     name: 'ReportSource',

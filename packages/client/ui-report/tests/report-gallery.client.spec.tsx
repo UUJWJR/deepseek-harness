@@ -9,6 +9,8 @@ afterEach(cleanup)
 
 const t = (key: ReportKey) => key
 
+const read = async (id: string) => (id === 'r1' ? '# title\nbody' : 'other body')
+
 const view = (partial: Partial<ReportGalleryView>): ReportGalleryView => ({
   status: 'ready',
   reports: [
@@ -22,22 +24,24 @@ const view = (partial: Partial<ReportGalleryView>): ReportGalleryView => ({
 
 describe('ReportGallery', () => {
   it('renders an empty state when there are no reports', () => {
-    render(<ReportGallery view={view({ reports: [], tags: [] })} t={t} />)
+    render(<ReportGallery view={view({ reports: [], tags: [] })} read={read} t={t} />)
     expect(screen.getByTestId('report-status').textContent).toBe('gallery.empty')
   })
 
-  it('renders rows and tags, and reveals a preview on selection', () => {
-    render(<ReportGallery view={view({})} t={t} />)
+  it('renders rows and tags, and reveals a preview on selection', async () => {
+    render(<ReportGallery view={view({})} read={read} t={t} />)
     expect(screen.getAllByTestId('report-row')).toHaveLength(2)
     expect(screen.getAllByTestId('report-tag').map(el => el.textContent)).toEqual(['分析', '通报'])
     expect(screen.queryByTestId('preview-path')).toBeNull()
 
     fireEvent.click(screen.getAllByTestId('report-select')[0] as Element)
     expect(screen.getByTestId('preview-path').textContent).toBe('a.md')
+    const content = await screen.findByTestId('preview-content')
+    expect(content.textContent).toBe('# title\nbody')
   })
 
   it('filters rows when a tag is selected', () => {
-    render(<ReportGallery view={view({})} t={t} />)
+    render(<ReportGallery view={view({})} read={read} t={t} />)
     fireEvent.click(screen.getAllByTestId('report-tag')[1] as Element)
     expect(screen.getAllByTestId('report-row')).toHaveLength(1)
     expect(screen.getByTestId('report-path').textContent).toBe('b.md')

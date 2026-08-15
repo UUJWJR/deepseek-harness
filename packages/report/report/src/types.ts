@@ -56,9 +56,24 @@ export interface PublishResult {
   deduplicated: boolean
 }
 
+/** A read request for one published report's body. */
+export interface ReportReadRequest {
+  /** The published-report id to read. */
+  id: ReportId
+}
+
+/** A read of one published report's copied body. */
+export interface ReportReadResult {
+  /** The published report the body belongs to. */
+  report: Report
+  /** The copied file's UTF-8 content. */
+  content: string
+}
+
 /** Error codes carried by {@link ReportError}. */
 export type ReportErrorCode =
   | 'REPORT_SOURCE_NOT_FOUND'
+  | 'REPORT_NOT_FOUND'
   | 'REPORT_PUBLISH_FAILED'
 
 /** Report registry error. */

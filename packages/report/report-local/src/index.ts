@@ -12,7 +12,7 @@ import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type Schema from '@deepseek-ai/schemastery'
 import { ReportError, ReportId, ReportRegistry } from '@deepseek-ai/dsh-report'
-import type { PublishRequest, PublishResult, Report, ReportListRequest } from '@deepseek-ai/dsh-report'
+import type { PublishRequest, PublishResult, Report, ReportListRequest, ReportReadRequest, ReportReadResult } from '@deepseek-ai/dsh-report'
 import { bindTypertRemote, Remote } from '@deepseek-ai/dsh-typert-protocol'
 import type {} from '@deepseek-ai/dsh-fs'
 
@@ -91,6 +91,15 @@ export class LocalReportRegistry extends ReportRegistry {
   override async tags(): Promise<readonly string[]> {
     const metadata = await this._readMetadata()
     return [...new Set(metadata.reports.flatMap(report => report.tags))]
+  }
+
+  @Remote('read')
+  override async read(request: ReportReadRequest): Promise<ReportReadResult> {
+    const metadata = await this._readMetadata()
+    const report = metadata.reports.find(entry => entry.id === request.id)
+    if (report === undefined) throw new ReportError('report not found', 'REPORT_NOT_FOUND')
+    const content = await readFile(join(this._root, String(report.id), basename(report.source.path)), 'utf8')
+    return { report, content }
   }
 
   private _metadataPath(): string {

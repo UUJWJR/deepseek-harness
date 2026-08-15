@@ -16,7 +16,7 @@ import { ReportGallery } from './ReportGallery.tsx'
  * lazy loader, and the bound translator.
  * @returns the trigger button plus the modal (null when closed).
  */
-export function ReportGalleryAction({ wide, useGallery, ensure, t }: ReportGalleryActionProps) {
+export function ReportGalleryAction({ wide, useGallery, ensure, read, t }: ReportGalleryActionProps) {
   const [open, setOpen] = useState(false)
   const view = useGallery(value => value)
 
@@ -43,7 +43,7 @@ export function ReportGalleryAction({ wide, useGallery, ensure, t }: ReportGalle
         title={t('gallery.title')}
         closeLabel={t('gallery.close')}
       >
-        <ReportGallery view={view} t={t} />
+        <ReportGallery view={view} read={read} t={t} />
       </Modal>
     </>
   )
