@@ -120,6 +120,18 @@
         path: ':memory:'
         openAt: never
 
+    # Knowledge base: one self-contained SQLite FTS5 index per base, plus the
+    # model-facing kb-ask tool that answers through a read-only subagent.
+    - id: kb-sqlite
+      name: '@deepseek-ai/dsh-kb-sqlite'
+      config:
+        indexDir: !!js dshHomePath('kb')
+
+    - id: kb-agent
+      name: '@deepseek-ai/dsh-kb-agent'
+      config:
+        provider: spawn
+
     # Shared projection registry: subagent catalog identity (mode/label) folds
     # through its registered units, so the `list_agents` surface below fails
     # loud without it; web layers reuse this same mount for list rows.

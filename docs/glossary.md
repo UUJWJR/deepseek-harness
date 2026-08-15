@@ -43,3 +43,8 @@ Domain vocabulary for DeepSeek Harness uses one canonical term per concept. Term
 - **Ralph loop** — one foreground fresh-agent workflow run toward an immutable objective. It is a model-facing tool policy composed from workflow and subagent primitives, not a same-session goal, agent-loop mode, scheduler, or generic workflow-script feature. <a id="ralph-loop"></a>
 - **Ralph round** — one fresh child session in a [Ralph loop](#ralph-loop). The child receives no parent or prior-child conversation seed; the shared workspace and one bounded [Ralph handoff](#ralph-handoff) carry cross-round state. <a id="ralph-round"></a>
 - **Ralph handoff** — the normalized bounded structured report passed from one continuing Ralph round to the next, containing status, summary, evidence, next steps, and blocker text. It supplements the shared workspace rather than replacing it as authority. <a id="ralph-handoff"></a>
+
+## knowledge base
+
+- **knowledge base** — a named local document root (a vault) whose markdown is split into heading-delimited chunks and full-text indexed. It carries a `ready | indexing | error` index state. <a id="knowledge-base"></a>
+- **retrieval hint** — a ranked full-text candidate: a source file path plus a short match snippet. A hint is a starting cue an agent verifies by reading, never answer material. <a id="retrieval-hint"></a>

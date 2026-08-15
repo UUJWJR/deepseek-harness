@@ -43,3 +43,8 @@ DeepSeek Harness 的领域词汇为每个概念规定一个规范术语。各术
 - **Ralph 循环**：一次面向不可变目标的前台全新 agent 工作流运行。它是由工作流和 subagent 原语组合而成的面向模型的工具策略，不是同会话目标、agent loop（智能体循环）模式、调度器或通用工作流脚本功能。<a id="ralph-loop"></a>
 - **Ralph Round**：[Ralph 循环](#ralph-loop)中的一个全新子会话。子会话不接收父会话或此前子会话的对话种子；共享工作区和一份有界的 [Ralph 交接](#ralph-handoff)承载跨 Round 的状态。<a id="ralph-round"></a>
 - **Ralph 交接**：从一个仍需继续的 Ralph Round 传给下一个 Ralph Round 的规范化、有界结构化报告，包含状态、摘要、证据、后续步骤和阻塞说明。它补充共享工作区，而不取代工作区的权威地位。<a id="ralph-handoff"></a>
+
+## 知识库
+
+- **knowledge base（知识库）** — 一个命名的本地文档根目录（vault），其 markdown 被切分为以标题分隔的分片并做全文索引。它带 `ready | indexing | error` 索引状态。<a id="knowledge-base"></a>
+- **retrieval hint（检索提示）** — 一条带排名的全文检索候选：源文件路径加一段匹配摘录。提示是 agent 需通过阅读验证的起步线索，绝非答案素材。<a id="retrieval-hint"></a>

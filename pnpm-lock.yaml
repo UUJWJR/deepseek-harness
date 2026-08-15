@@ -1046,6 +1046,12 @@ importers:
       '@deepseek-ai/dsh-jobs-local':
         specifier: workspace:^
         version: link:../../jobs/jobs-local
+      '@deepseek-ai/dsh-kb-agent':
+        specifier: workspace:^
+        version: link:../../kb/kb-agent
+      '@deepseek-ai/dsh-kb-sqlite':
+        specifier: workspace:^
+        version: link:../../kb/kb-sqlite
       '@deepseek-ai/dsh-llm':
         specifier: workspace:^
         version: link:../../llm/llm
