@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/easywork-porting-checklist.md
+easywork-porting-checklist.md: 6f8a0fa5c0727a37ca639e6977f45594c527c498
+easywork-porting-checklist.zh.md: 3951d4ae27906b8e4af1539ea536542cb2634aec

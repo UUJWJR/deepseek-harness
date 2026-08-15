@@ -1,11 +1,14 @@
-# 在 deepseek-harness 中二次开发实操指南
+# Secondary development in deepseek-harness — a hands-on guide
 
-> 目标:把 EasyWork 定制能力(EasyWork 侧清单见 docs/secondary-development.md)以 DSH 原生的插件/skill 机制落地。
-> 已确认事实:DSH 是**一切皆插件**的微内核(基于 vendored Cordis);技能格式与 EasyWork 兼容;开发流程 = pnpm 单仓 + 门禁。
+English | [中文](easywork-development-guide.zh.md)
+
+> Goal: land EasyWork's custom capabilities (the EasyWork-side checklist is in docs/secondary-development.md) through DSH's native plugin/skill mechanisms.
+>
+> Confirmed facts: DSH is an everything-is-a-plugin microkernel (based on vendored Cordis); the skill format is compatible with EasyWork; the development process is a pnpm monorepo plus gates.
 
 ---
 
-## 0. 开发环境搭建
+## 0. Setting up the development environment
 
 ```sh
 # 前置:Node 22.19+ / 24+,Corepack pnpm(packageManager 固定 pnpm@11.7.0)
@@ -15,58 +18,58 @@ pnpm install             # 安装依赖 + 配置 Lefthook 钩子
 pnpm run typecheck       # 搭建完成的验收标准:typecheck 成功退出
 ```
 
-日常命令(仓库根):
-- `pnpm run test` — vitest 单元测试
-- `pnpm run test:snapshot` — 无 key 的 ACP/headless 回放
-- `pnpm run lint` / `pnpm run typecheck` — 静态检查
-- `pnpm run build` — tsc 产出 + tsdown 打包
-- `pnpm run hygiene` — knip/publint/workspace 约束
-- `pnpm dsh --profile headless "任务"` — 从源码跑一次无头任务(需要 DEEPSEEK_API_KEY)
-- Web GUI:apps/web 产物由 dsh 的 web 模式托管(当前 3080 端口)
+Daily commands (repo root):
+- `pnpm run test` — vitest unit tests
+- `pnpm run test:snapshot` — keyless ACP/headless replay
+- `pnpm run lint` / `pnpm run typecheck` — static checks
+- `pnpm run build` — tsc output + tsdown bundling
+- `pnpm run hygiene` — knip/publint/workspace constraints
+- `pnpm dsh --profile headless "task"` — run one headless task from source (requires DEEPSEEK_API_KEY)
+- Web GUI: the apps/web artifact is hosted by dsh's web mode (currently port 3080)
 
 ---
 
-## 1. 扩展机制速查(功能 → 落点)
+## 1. Extension-mechanism quick reference (capability → landing point)
 
-DSH 是微内核:**任何产品功能 = 在某个文档化扩展点上挂监听器**,不修改 agent-loop 本身。
+DSH is a microkernel: **any product feature = attach a listener to a documented extension point**, without modifying the agent loop itself.
 
-| 你要做的 | 用哪个机制 | 对应包 |
+| What you want to do | Which mechanism | Package |
 |---|---|---|
-| 加一个工具 | `ctx.tools.register()` / `defineTool` | 任意包 |
-| 加权限门禁(如权限窗口) | `ctx.on('tools/pre-execute', ...)` 返回 `{kind:'deny'}` / `{kind:'ask'}` | interaction |
-| 包裹工具执行(超时/重试/指标) | `ctx.on('tools/execute', ...)` | guard |
-| 观察最终工具结果(审计) | `ctx.on('tools/result', ...)` | — |
-| 改系统提示词 | `ctx.systemPrompt.section()` | core |
-| 加业务技能 | 技能目录(SKILL.md)放进技能根,零代码 | skill-filesystem |
-| 加会话 UI 业务行 | `ConversationNodeDefinition` + keyed Chat renderer | client / ui-* |
-| 监听会话事件流(渲染/统计) | `ctx.on('session/event', ...)` | — |
-| 给模型发输入/steer | `ctx.agents.get(sid)?.followup()` / `.steer()` | core |
-| 持久化数据 | `ctx.storage`(JSON/SQLite 后端)+ 会话 JSONL/SQLite | storage / session |
-| 定时/后台任务 | 外部 cron + `dsh --profile headless`,或扩展 jobs/schedule | jobs / headless |
+| Add a tool | `ctx.tools.register()` / `defineTool` | any package |
+| Add a permission gate (e.g. a permission window) | `ctx.on('tools/pre-execute', ...)` returning `{kind:'deny'}` / `{kind:'ask'}` | interaction |
+| Wrap tool execution (timeout/retry/metrics) | `ctx.on('tools/execute', ...)` | guard |
+| Observe the final tool result (audit) | `ctx.on('tools/result', ...)` | — |
+| Change the system prompt | `ctx.systemPrompt.section()` | core |
+| Add a business skill | put a skill directory (SKILL.md) into a skill root, zero code | skill-filesystem |
+| Add a session UI business row | `ConversationNodeDefinition` + keyed Chat renderer | client / ui-* |
+| Listen to the session event stream (rendering/statistics) | `ctx.on('session/event', ...)` | — |
+| Send input to the model / steer | `ctx.agents.get(sid)?.followup()` / `.steer()` | core |
+| Persist data | `ctx.storage` (JSON/SQLite backends) + session JSONL/SQLite | storage / session |
+| Scheduled/background tasks | external cron + `dsh --profile headless`, or extend jobs/schedule | jobs / headless |
 
-### 技能发现根(关键!)
+### Skill discovery roots (key!)
 
-`@deepseek-ai/dsh-skill-filesystem` 按序扫描(rank 小的优先):
+`@deepseek-ai/dsh-skill-filesystem` scans in order (lower rank wins):
 
-| 来源 | 路径 |
+| Source | Path |
 |---|---|
 | project-dsh | `<projectRoot>/.dsh/skills` |
 | project-agents | `<projectRoot>/.agents/skills` |
-| custom | `Config.customSkillDirs`(配置项) |
-| user-dsh | `<dshHome>/skills`($DSH_HOME 或 ~/.dsh) |
-| user-agents | `<agentsHome>/skills`($DSH_AGENTS_HOME 或 ~/.agents) |
+| custom | `Config.customSkillDirs` (config item) |
+| user-dsh | `<dshHome>/skills` ($DSH_HOME or ~/.dsh) |
+| user-agents | `<agentsHome>/skills` ($DSH_AGENTS_HOME or ~/.agents) |
 
-**技能格式**:`<name>/SKILL.md`(目录 bundle,frontmatter 需 `name`(kebab-case)+ `description`,可选 `whenToUse`/`metadata`/`disable-model-invocation`/`user-invocable`),或扁平 `<name>.md`。嵌套 `**/SKILL.md` 不递归发现。技能体每次加载实时重读,无需缓存失效。子资源目录 `references/`、`scripts/`、`assets/` 的变更不触发目录失效。
+**Skill format**: `<name>/SKILL.md` (directory bundle; frontmatter needs `name` (kebab-case) + `description`, optionally `whenToUse`/`metadata`/`disable-model-invocation`/`user-invocable`), or a flat `<name>.md`. Nested `**/SKILL.md` is not discovered recursively. The skill body is re-read live on every load with no cache invalidation. Changes to the sub-resource directories `references/`, `scripts/`, `assets/` do not trigger directory invalidation.
 
-> ✅ **已验证**:EasyWork 的 12 个技能均为 `<name>/SKILL.md` + kebab-case name + description,与 DSH 格式**完全兼容**,可直接迁移。
+> ✅ **Verified**: EasyWork's 12 skills are all `<name>/SKILL.md` + kebab-case name + description, fully compatible with the DSH format, and can be migrated directly.
 
 ---
 
-## 2. 分模块落地指南
+## 2. Per-module landing guide
 
-### 2.1 技能资产迁移(第一步,零代码,立即执行)
+### 2.1 Skill asset migration (first step, zero code, do it now)
 
-**做法**:把技能目录复制到 DSH 任意技能根,DSH 自动发现、模型经 `skill` 工具加载。
+**Approach**: copy the skill directories into any DSH skill root; DSH discovers them automatically and the model loads them through the `skill` tool.
 
 ```sh
 # 方案 A:用户级(所有项目可用)——推荐
@@ -79,39 +82,39 @@ mkdir -p <projectRoot>/.dsh/skills
 cp -r <easywork>/.claude/skills/* <projectRoot>/.dsh/skills/
 ```
 
-**核对清单**:
-1. 每个技能 frontmatter 的 `name` 是 kebab-case、`description` 存在(DSH 必需)。
-2. 技能内跨目录相对引用(`../references/INDEX.md`)——references 须与技能同级或按技能内声明的 resourceBase 调整。
-3. 脚本依赖:html-to-pdf 需 Playwright/WeasyPrint;md-to-xhtml/report-publish 需 Python(gen-datajson.py 等)——在 DSH 环境装齐或把依赖写进技能说明。
-4. 技能内嵌 EasyWork 特有 API(如 `/api/tasks/upsert` 上报)替换为 DSH 等价机制(会话事件/`ctx.todo`/`ctx.jobs`)或删除。
-5. **语义注意**:EasyWork 技能是 Claude Code 系(compatibility: Read/Write/Edit/Agent…),DSH 工具名不同(bash/fs/web/subagent),技能正文中的工具名提示需过一遍;DSH 无 `Agent` 工具,子代理走 `ctx.subagent`。
+**Checklist**:
+1. Each skill's frontmatter has a kebab-case `name` and a `description` (both required by DSH).
+2. Cross-directory relative references inside a skill (`../references/INDEX.md`) — references must sit at the same level as the skill, or be adjusted to the resourceBase declared inside the skill.
+3. Script dependencies: html-to-pdf needs Playwright/WeasyPrint; md-to-xhtml/report-publish need Python (gen-datajson.py etc.) — install them in the DSH environment or document the dependencies in the skill description.
+4. Replace any EasyWork-specific API embedded in a skill (e.g. `/api/tasks/upsert` reporting) with the DSH equivalent (session events / `ctx.todo` / `ctx.jobs`) or delete it.
+5. **Semantic note**: EasyWork skills are Claude Code-style (compatibility: Read/Write/Edit/Agent…), whereas DSH tool names differ (bash/fs/web/subagent); the tool-name hints in the skill bodies need a pass. DSH has no `Agent` tool — subagents go through `ctx.subagent`.
 
-**验收**:DSH GUI 技能列表出现 12 个技能;新会话中模型能用 `skill` 工具加载 report-publish 并跑通简报模式。
-
----
-
-### 2.2 知识库检索(最高业务价值)
-
-**蓝本**:ADR 0004(检索)/ 0005(导入消化)/ 0006(KbAgent)。DSH 已有 SQLite FTS 先例(session-query)。
-
-**做法**:新增一个能力包 `packages/kb/`(参考 adding-a-package.md 清单)。
-
-1. **领域模型**:KnowledgeBase(注册、状态 ready/indexing/error、chunk 表)——用 `ctx.storage` 或独立 SQLite。
-2. **索引器**:扫描本地文档目录(md 按 `##` 切 chunk)→ FTS5 trigram 建表(照抄 session-query 的 FTS 模式)→ `ctx.fs` 监听增量 + 手动重建。
-3. **检索器**:概念匹配 + FTS BM25 合并取 top-N → 产出 RetrievalHints。
-4. **只读问答 agent**:复用 DSH agent-loop——新 agent 会话 `cwd` 指向 KB 根,工具注册表 restrict 到 read/grep/glob,系统提示注入 VaultMap + RetrievalHints。DSH 的 `ctx.tools.restrict()` 天然支持"只读工具面",比 EasyWork 的服务端拒绝更干净。
-5. **导入消化**(第二阶段):文件上传 → 归档 → LLM 消化(digester)→ 重索引;进度走 `session/event` + `ctx.jobs`。
-6. **GUI**:会话输入框 KB 选择器(ui-* 插件);KB 管理页。
-
-**决策点(建议记 ADR)**:DSH 用 FTS 还是引入 embedding?——蓝本 ADR 0004 的理由(FTS5 零依赖/中文友好)在 DSH 同样成立,建议沿用。
+**Acceptance**: 12 skills appear in the DSH GUI skill list; in a new session the model can load report-publish through the `skill` tool and run the briefing mode end-to-end.
 
 ---
 
-### 2.3 权限窗口 / 可信技能
+### 2.2 Knowledge-base retrieval (highest business value)
 
-**蓝本**:ADR 0007/0008。DSH 已有 approval/presets/审计事件。
+**Blueprint**: ADR 0004 (retrieval) / 0005 (import digestion) / 0006 (KbAgent). DSH already has a SQLite FTS precedent (session-query).
 
-**做法**:interaction 包扩展,或新插件 `trusted-skill-window`:
+**Approach**: add a capability package `packages/kb/` (see the adding-a-package.md checklist).
+
+1. **Domain model**: KnowledgeBase (registration, state ready/indexing/error, chunk table) — use `ctx.storage` or a standalone SQLite.
+2. **Indexer**: scan a local document directory (split md into chunks by `##`) → build an FTS5 trigram table (copy session-query's FTS pattern) → incremental updates via `ctx.fs` watching + manual rebuild.
+3. **Retriever**: concept matching + FTS BM25 merge into top-N → produce RetrievalHints.
+4. **Read-only Q&A agent**: reuse the DSH agent loop — a new agent session with `cwd` pointing at the KB root, a tool registry restricted to read/grep/glob, and the system prompt injected with VaultMap + RetrievalHints. DSH's `ctx.tools.restrict()` natively supports a "read-only tool surface", cleaner than EasyWork's server-side rejection.
+5. **Import digestion** (phase two): file upload → archive → LLM digestion (digester) → re-index; progress goes through `session/event` + `ctx.jobs`.
+6. **GUI**: a KB selector in the session composer (ui-* plugin); a KB management page.
+
+**Decision point (suggest recording an ADR)**: should DSH use FTS or introduce embedding? — the blueprint ADR 0004's rationale (FTS5 zero-dependency / Chinese-friendly) holds equally in DSH, so keep FTS.
+
+---
+
+### 2.3 Permission window / trusted skills
+
+**Blueprint**: ADR 0007/0008. DSH already has approval/presets/audit events.
+
+**Approach**: extend the interaction package, or add a plugin `trusted-skill-window`:
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -133,95 +136,95 @@ export function apply(ctx: Context) {
 }
 ```
 
-**关键**:DSH 的 `skill` 工具调用是**显式事件**——ADR 0008 在 EasyWork 里要靠前端上报,在 DSH 里天然成立,落地更顺。审计写 `session/event` 或独立 storage 表。
+**Key point**: DSH's `skill` tool call is an **explicit event** — ADR 0008 required frontend reporting in EasyWork, but it holds naturally in DSH, so the landing is smoother. Audit goes to `session/event` or a standalone storage table.
 
 ---
 
-### 2.4 定时任务(cron 无头执行 + 回放)
+### 2.4 Scheduled tasks (cron headless execution + replay)
 
-**蓝本**:ADR 0010(Run = HeadlessSession)/ 0011(无人值守权限)。
+**Blueprint**: ADR 0010 (Run = HeadlessSession) / 0011 (unattended permissions).
 
-**做法(尊重 DSH 现有边界,外部触发 + 原生回放)**:
-1. **触发器**:系统 crontab / launchd 定时执行 `dsh --profile headless "<技能调用指令>"`(DSH 已有 headless profile 一次性无头执行)。
-2. **回放**:headless 会话本就写 JSONL,DSH 会话回放(fork/replay)天然满足"对话式回放执行细节"——与 ADR 0010 同构。
-3. **无人值守权限**:headless profile 的 permission-presets 按技能等级(sandbox/networked/full)选择;越权 = deny + 审计 + 标记失败。
-4. **管理 UI**(可选):Schedule 列表页(ui-* 插件),记录触发规则 + Run 状态。
+**Approach (respect DSH's existing boundaries, external trigger + native replay)**:
+1. **Trigger**: system crontab / launchd runs `dsh --profile headless "<skill invocation instruction>"` on schedule (DSH's headless profile already does one-shot headless execution).
+2. **Replay**: headless sessions already write JSONL, and DSH session replay (fork/replay) naturally satisfies "conversational replay of execution details" — isomorphic with ADR 0010.
+3. **Unattended permissions**: the headless profile's permission-presets are chosen by skill level (sandbox/networked/full); escalation = deny + audit + mark failed.
+4. **Management UI** (optional): a Schedule list page (ui-* plugin) recording trigger rules + Run status.
 
-**若需内置 cron**:扩展 schedule 包(当前仅会话内提醒,明确不支持 cron 表达式),或新建 jobs 调度器——先评估外部 cron 是否够用。
-
----
-
-### 2.5 文件增强(GUI 层)
-
-**蓝本**:ADR 0012/0013/0014/0015。
-
-**做法**:全部是 GUI + fs 服务扩展:
-1. **文件树 + 多选批量删除/移动**:ui-files 插件渲染文件树;fs 服务扩展批量端点(祖先折叠 + 循环防护 + 409 语义)。
-2. **隐藏文件**:showHidden 参数 + 切换按钮(纯 UX,同 ADR 0014)。
-3. **HTML 转 PDF**:服务端直调 html-to-pdf 的 render.py + 伪百分比进度走 `session/event`;需 server 端 python/Playwright。
-4. **拖拽移动**:dataTransfer.types 区分内部移动与 OS 上传。
+**If built-in cron is needed**: extend the schedule package (currently session-internal reminders only, explicitly no cron expressions), or add a jobs scheduler — first assess whether external cron suffices.
 
 ---
 
-### 2.6 消息面板角色分层 / 流式平滑
+### 2.5 File enhancements (GUI layer)
 
-**蓝本**:ADR 0016~0020。
+**Blueprint**: ADR 0012/0013/0014/0015.
 
-**做法**:DSH ui-conversation 已渲染工具调用树/时间线(即"管理员视图")。增加:
-1. **紧凑模式**:ConversationNodeDefinition + keyed Chat renderer,横向胶囊条(5 列固定/basename/+N 软上限/完成后常显)。
-2. **流式平滑**:稳定 key + flush 合并 + 方向感知滚动——DSH 事件流下重点是合并与 memo(照搬 ADR 0019 三件套思路)。
-3. **无多用户时**:角色分层退化为"紧凑模式开关"(settings 项),不必等 2.8 多用户。
-
----
-
-### 2.7 展示区画廊
-
-**蓝本**:ADR 0001/0002/0003/0021/0022。
-
-**做法**:新包 `packages/report/` + ui 插件:
-1. Report/Tag 实体(`ctx.storage`),发布 = 复制文件 + 记录,去重键(sourceWorkspace, sourcePath)。
-2. 画廊 UI:标签侧边栏 + 报告列表 + 预览(iframe/新页)。
-3. markdown-lite 渲染器(ADR 0022):散文字段 → p/ul/table + 行内 strong/em/code(先转义)。
-4. 单用户阶段:画廊对所有会话共享即可;跨用户读共享/写隔离(0021)待 2.8 落地后启用。
+**Approach**: all GUI + fs service extensions:
+1. **File tree + multi-select bulk delete/move**: a ui-files plugin renders the file tree; the fs service extends bulk endpoints (ancestor folding + loop protection + 409 semantics).
+2. **Hidden files**: a showHidden parameter + toggle button (pure UX, same as ADR 0014).
+3. **HTML to PDF**: the server calls html-to-pdf's render.py directly + fake percentage progress via `session/event`; needs server-side python/Playwright.
+4. **Drag to move**: dataTransfer.types distinguishes internal moves from OS uploads.
 
 ---
 
-### 2.8 多用户体系(建议 v2,哲学冲突)
+### 2.6 Message-panel role split / streaming smoothness
 
-**蓝本**:DEVELOPMENT_PLAN.md + 3.1 节。
+**Blueprint**: ADR 0016~0020.
 
-**冲突**:DSH 是单用户本地工具(identity 仅遥测 ID)。多用户需要 identity/credential、workspace 归属、RBAC、配额、管理后台——**先与 DSH 上游对齐方向再做**,否则与项目哲学冲突,难以合入。建议:
-1. 先用 `settings`/`credentials` 模式做单机多 profile(轻量替代)。
-2. 若有强需求,单独开设计文档评估(身份/隔离/审计三个子问题)。
+**Approach**: DSH ui-conversation already renders the tool-call tree/timeline (the "admin view"). Add:
+1. **Compact mode**: ConversationNodeDefinition + keyed Chat renderer, a horizontal capsule strip (5 fixed columns / basename / +N soft cap / always visible when done).
+2. **Streaming smoothness**: stable key + flush coalescing + direction-aware scrolling — under DSH's event stream the focus is coalescing and memo (port ADR 0019's three-piece approach).
+3. **Without multi-user**: the role split degrades to a "compact mode toggle" (a settings item); no need to wait for 2.8 multi-user.
 
 ---
 
-## 3. 新包开发规范(按 adding-a-package.md)
+### 2.7 Display-zone gallery
 
-新增能力包必须满足:
+**Blueprint**: ADR 0001/0002/0003/0021/0022.
 
-| 项 | 要求 |
+**Approach**: a new package `packages/report/` + ui plugin:
+1. Report/Tag entities (`ctx.storage`); publishing = copy file + record, dedup key (sourceWorkspace, sourcePath).
+2. Gallery UI: tag sidebar + report list + preview (iframe/new page).
+3. markdown-lite renderer (ADR 0022): prose fields → p/ul/table + inline strong/em/code (escape first).
+4. Single-user stage: the gallery is shared across all sessions; cross-user read-shared/write-isolated (0021) activates after 2.8 lands.
+
+---
+
+### 2.8 Multi-user system (suggest v2, philosophy conflict)
+
+**Blueprint**: DEVELOPMENT_PLAN.md + section 3.1.
+
+**Conflict**: DSH is a single-user local tool (identity is only a telemetry ID). Multi-user needs identity/credential, workspace ownership, RBAC, quotas, an admin backend — **align direction with DSH upstream first**, otherwise it conflicts with the project philosophy and is hard to merge. Suggestions:
+1. First use the `settings`/`credentials` pattern for single-machine multi-profile (a lightweight substitute).
+2. If there is strong demand, open a dedicated design document to evaluate the three sub-problems (identity/isolation/audit).
+
+---
+
+## 3. New-package development rules (per adding-a-package.md)
+
+A new capability package must satisfy:
+
+| Item | Requirement |
 |---|---|
-| 目录 | `packages/<group>/<pkg>/`(已有分组:core/llm/shell/fs/skill/subagent/todo/session/ui/util/support…) |
-| package.json | `private: true`、version 与根一致、`@deepseek-ai/cordis` 在 peer + dev 双声明、files 仅 lib 产物 |
-| tsconfig | extends `../../../tsconfig.base.json`,rootDir src,references 指向 cordis/schemastery/依赖包 |
-| 登记 | 普通包加进 `tsconfig.host.json` 或 `tsconfig.client.json` 的 references(二选一,不可同时) |
-| README | 服务 API/事件/扩展点 + Model Experience 三 H4 + Known Limitations |
-| 验证 | `pnpm run constraints && pnpm run typecheck && pnpm run lint && pnpm run build && pnpm run hygiene` |
+| Directory | `packages/<group>/<pkg>/` (existing groups: core/llm/shell/fs/skill/subagent/todo/session/ui/util/support…) |
+| package.json | `private: true`, version matching the root, `@deepseek-ai/cordis` in both peer + dev, files only the lib artifact |
+| tsconfig | extends `../../../tsconfig.base.json`, rootDir src, references pointing to cordis/schemastery/dependency packages |
+| Registration | add the package to `tsconfig.host.json` or `tsconfig.client.json` references (one of the two, never both) |
+| README | service API/events/extension points + the three Model Experience H4s + Known Limitations |
+| Verification | `pnpm run constraints && pnpm run typecheck && pnpm run lint && pnpm run build && pnpm run hygiene` |
 
-包拓扑原则:能力定义 / Provider / Consumer 拆包(参考 shell 三件套);命名用 role 后缀(Registry/Provider/Policy/Store…)且 `ctx` 键单复数与类名一致。
+Package-topology principle: split capability definition / Provider / Consumer into packages (see the shell trio); name with role suffixes (Registry/Provider/Policy/Store…) and keep the `ctx` key's singular/plural consistent with the class name.
 
 ---
 
-## 4. 建议的实施里程碑
+## 4. Suggested implementation milestones
 
-| 里程碑 | 内容 | 预计形态 |
+| Milestone | Content | Expected form |
 |---|---|---|
-| M1(立即) | 12 技能迁入技能根 + 依赖核对 | 零代码,1 天 |
-| M2 | 知识库包(kb):模型/索引/检索/只读问答 | 新包 ~1-2 周 |
-| M3 | 权限窗口插件 + 定时任务(外部 cron + headless) | 2 个插件/脚本 ~1 周 |
-| M4 | 文件增强 + 消息面板紧凑模式 | ui 插件 ~1-2 周 |
-| M5 | 展示区画廊 | 新包 + ui ~1 周 |
-| M6 | 多用户(v2,需先对齐方向) | 专项设计 |
+| M1 (now) | 12 skills into the skill root + dependency check | zero code, 1 day |
+| M2 | knowledge-base package (kb): model/index/retrieval/read-only Q&A | new package ~1-2 weeks |
+| M3 | permission-window plugin + scheduled tasks (external cron + headless) | 2 plugins/scripts ~1 week |
+| M4 | file enhancements + message-panel compact mode | ui plugin ~1-2 weeks |
+| M5 | display-zone gallery | new package + ui ~1 week |
+| M6 | multi-user (v2, needs direction alignment first) | dedicated design |
 
-每完成一个里程碑,在 DSH 侧补一份 ADR(沿用本仓库 docs/adr/ 风格),记录与蓝本的差异。
+After each milestone, add an ADR on the DSH side (following this repo's docs/adr/ style), recording the differences from the blueprint.
