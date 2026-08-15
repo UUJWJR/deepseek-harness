@@ -207,6 +207,7 @@
       "@deepseek-ai/dsh-client-ui-message-feedback": ["./packages/client/ui-message-feedback/src"],
       "@deepseek-ai/dsh-client-ui-report": ["./packages/client/ui-report/src"],
       "@deepseek-ai/dsh-client-ui-files": ["./packages/client/ui-files/src"],
+      "@deepseek-ai/dsh-client-ui-tool-compact": ["./packages/client/ui-tool-compact/src"],
       "@deepseek-ai/dsh-client-ui-agent-preset": ["./packages/client/ui-agent-preset/src"],
       "@deepseek-ai/dsh-client-ui-permission-presets": ["./packages/client/ui-permission-presets/src"],
       "@deepseek-ai/dsh-client-ui-skill": ["./packages/client/ui-skill/src"],

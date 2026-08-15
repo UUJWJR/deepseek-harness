@@ -133,6 +133,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/report/report-local': { kind: 'none', reason: 'The local backend returns published reports and tags only to callers and registers no model-facing prompt, schema, tool, or message.' },
   'packages/client/ui-report': { kind: 'none', reason: 'Browser-side gallery of published reports; renders durable report records without changing model context.' },
   'packages/client/ui-files': { kind: 'none', reason: 'Browser-side file tree; lists and deletes files without changing model context.' },
+  'packages/client/ui-tool-compact': { kind: 'none', reason: 'Browser-side compact tool-call capsules; projects logged tool calls without changing model context.' },
   'packages/interaction/trusted-skill-window': { kind: 'none', reason: 'The window auto-approves approval requests during a trusted skill but registers no model-facing prompt, schema, tool, or message.' },
   'packages/interaction/unattended-permission': { kind: 'none', reason: 'The level gate denies tool calls outside a declared skill level but registers no model-facing prompt, schema, tool, or message.' },
   'packages/settings/settings': { kind: 'indirect', reason: 'The seam stores and resolves user settings; consumer plugins own any model-facing content fed by a value.' },
