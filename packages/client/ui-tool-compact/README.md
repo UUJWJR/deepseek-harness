@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Compact tool-call capsules. It binds a durable `compactMode` setting and registers a per-call compact tool `ConversationNodeDefinition` and its keyed capsule renderer while the setting is on, so each tool call also renders as a one-line capsule (name + settled marker) beside the full call tree. A compact-mode checkbox row in the settings General section owns the toggle. It registers no model-facing surface.
+Compact tool-call capsules. It binds a durable `compactMode` setting and, while it is on, replaces the full tool-call tree with a turn-level capsule strip: a `ConversationNodeDefinition` aggregates every tool call in a turn into one strip (5-column cap + "+N" overflow), rendered by a keyed capsule renderer, while a shadowing renderer hides the tree. A compact-mode checkbox row in the settings General section owns the toggle. It registers no model-facing surface.
 
 ## Settings
 
@@ -20,6 +20,4 @@ None; this package neither assembles nor sends a provider request.
 
 ## Known Limitations and Deferred Work
 
-- **Additive, not replacing** — the capsules render beside the full call tree; replacing the tree renderer is deferred.
-
-- **Per-call capsules** — each capsule is per tool call; the turn-level "5 columns + +N" strip (`ToolCapsuleStrip`) is not yet wired to a turn-aggregating Definition.
+- **No per-capsule interaction** — the strip is read-only; selecting a capsule or expanding one tool's detail is deferred.

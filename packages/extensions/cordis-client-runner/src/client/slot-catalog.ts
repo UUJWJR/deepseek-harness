@@ -251,6 +251,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
       'client-ui-conversation UnknownNodeView key \'unknown\'',
       'client-ui-goal GoalCommandInputView key \'command-input\'',
       'client-ui-tool-compact CompactToolView key \'tool-call-compact\'',
+      'client-ui-tool-compact HideToolTree key \'tool-call\'',
       'client-ui-tool ToolCallTree key \'tool-call\'',
       'client-ui-workflow-run WorkflowRunPanel key \'workflow-run\'',
     ],
