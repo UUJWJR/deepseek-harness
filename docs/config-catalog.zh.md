@@ -838,6 +838,44 @@ export interface Config {
 
 来源：[`packages/jobs/jobs-local/src/index.ts:31`](../packages/jobs/jobs-local/src/index.ts)
 
+<a id="deepseek-aidsh-kb-agent"></a>
+
+## `@deepseek-ai/dsh-kb-agent`
+
+需要：`tools` · `knowledgeBases` · `subagents`
+
+```ts config-catalog
+/** Configuration for the kb-ask tool. */
+export interface Config {
+  /** The ctx.subagents provider name to start the read-only child on. */
+  provider: string
+  /** Model-facing tool name. Defaults to kb-ask. */
+  toolName?: string
+}
+```
+
+来源：[`packages/kb/kb-agent/src/index.ts:22`](../packages/kb/kb-agent/src/index.ts)
+
+<a id="deepseek-aidsh-kb-sqlite"></a>
+
+## `@deepseek-ai/dsh-kb-sqlite`
+
+```ts config-catalog
+/** SQLite-backed knowledge base registry configuration. */
+export interface Config extends KnowledgeBaseConfig {
+  /** Absolute directory holding one per-knowledge-base index file. */
+  indexDir: string
+  /** Default hint count when a request omits a limit. Defaults to 8. */
+  defaultLimit?: number
+  /** Snippet length in FTS5 tokens. Defaults to 40. */
+  snippetTokens?: number
+}
+```
+
+依赖：[`KnowledgeBaseConfig`](../packages/kb/kb/src/index.ts)
+
+来源：[`packages/kb/kb-sqlite/src/index.ts:27`](../packages/kb/kb-sqlite/src/index.ts)
+
 <a id="deepseek-aidsh-llm-deepseek"></a>
 
 ## `@deepseek-ai/dsh-llm-deepseek`
@@ -2798,6 +2836,26 @@ export type ToolPresentationMode = 'native' | 'code' | 'both'
 
 来源：[`packages/core/tools/src/index.ts:654`](../packages/core/tools/src/index.ts)
 
+<a id="deepseek-aidsh-trusted-skill-window"></a>
+
+## `@deepseek-ai/dsh-trusted-skill-window`
+
+需要：`tools`
+
+```ts config-catalog
+/** Configuration for the trusted-skill permission window. */
+export interface Config {
+  /** Skill names the deployment trusts; loading one opens the window. */
+  trustedSkills?: string[]
+  /** Window lifetime in milliseconds. Defaults to 10 minutes. */
+  windowTtlMs?: number
+  /** Maximum auto-approved tool calls per window. Defaults to 50. */
+  maxAutoApprovals?: number
+}
+```
+
+来源：[`packages/interaction/trusted-skill-window/src/index.ts:25`](../packages/interaction/trusted-skill-window/src/index.ts)
+
 <a id="deepseek-aidsh-typert-loader"></a>
 
 ## `@deepseek-ai/dsh-typert-loader`
@@ -2813,6 +2871,25 @@ export interface Config {
 ```
 
 来源：[`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
+
+<a id="deepseek-aidsh-unattended-permission"></a>
+
+## `@deepseek-ai/dsh-unattended-permission`
+
+需要：`tools`
+
+```ts config-catalog
+/** Configuration for the unattended permission model. */
+export interface Config {
+  /** Skill name to unattended level; skills absent from the map are unrestricted. */
+  unattendedLevels?: Record<string, UnattendedLevel>
+}
+
+/** Unattended level: sandbox, networked, or full. */
+export type UnattendedLevel = 'sandbox' | 'networked' | 'full'
+```
+
+来源：[`packages/interaction/unattended-permission/src/index.ts:27`](../packages/interaction/unattended-permission/src/index.ts)
 
 <a id="deepseek-aidsh-user-approval"></a>
 
@@ -3104,6 +3181,7 @@ export interface Config {
 - `@deepseek-ai/dsh-fs` — 抽象 `FileSystem`（[`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts)）
 - `@deepseek-ai/dsh-host-directory-picker` — 抽象 `DirectoryPicker`（[`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts)）
 - `@deepseek-ai/dsh-jobs` — 抽象 `JobRegistry`（[`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts)）
+- `@deepseek-ai/dsh-kb` — 抽象 `KnowledgeBaseRegistry`（[`packages/kb/kb/src/index.ts`](../packages/kb/kb/src/index.ts)）
 - `@deepseek-ai/dsh-sandbox` — 抽象 `SandboxProvider`（[`packages/sandbox/sandbox/src/index.ts`](../packages/sandbox/sandbox/src/index.ts)）
 - `@deepseek-ai/dsh-session-persistence` — 抽象 `SessionPersistence`（[`packages/session/session-persistence/src/index.ts`](../packages/session/session-persistence/src/index.ts)）
 - `@deepseek-ai/dsh-session-query` — 抽象 `SessionQueryEngine`（[`packages/session-query/session-query/src/index.ts`](../packages/session-query/session-query/src/index.ts)）

@@ -604,6 +604,27 @@ pwsh 工具是 Windows 组合中 bash 执行器 seam 的 PowerShell 方言消费
 
 ## `@deepseek-ai/dsh-tool-fs`
 
+### `delete`
+
+删除一个文件或空目录。目录非空则失败。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Path to delete, resolved by the filesystem backend."
+    }
+  },
+  "required": [
+    "file_path"
+  ]
+}
+```
+
+来源：[`packages/fs/tool-fs/src/index.ts`](../packages/fs/tool-fs/src/index.ts)
+
 ### `edit`
 
 通过替换字面量文本来编辑现有 UTF-8 文本文件。
@@ -633,6 +654,32 @@ pwsh 工具是 Windows 组合中 bash 执行器 seam 的 PowerShell 方言消费
     "file_path",
     "old_string",
     "new_string"
+  ]
+}
+```
+
+来源：[`packages/fs/tool-fs/src/index.ts`](../packages/fs/tool-fs/src/index.ts)
+
+### `move`
+
+将文件或目录移动到目标路径。将目录移入其自身后代则失败。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Source path to move."
+    },
+    "destination": {
+      "type": "string",
+      "description": "Destination path."
+    }
+  },
+  "required": [
+    "file_path",
+    "destination"
   ]
 }
 ```

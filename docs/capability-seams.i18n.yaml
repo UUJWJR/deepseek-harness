@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/capability-seams.md
 capability-seams.md: b40b54410bad57ab358b48d67a8cbdb9b58046d0
-capability-seams.zh.md: 441d9222835e67c4a9f657d2335860005934094b
+capability-seams.zh.md: 556b693429c801091dda0f40459f810e8c695a1f
