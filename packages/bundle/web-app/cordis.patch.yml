@@ -279,6 +279,9 @@
     - id: ui-report
       name: '@deepseek-ai/dsh-client-ui-report'
 
+    - id: ui-files
+      name: '@deepseek-ai/dsh-client-ui-files'
+
     - id: ui-trajectory
       name: '@deepseek-ai/dsh-client-ui-trajectory'
 
