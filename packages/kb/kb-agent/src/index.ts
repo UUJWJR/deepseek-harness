@@ -97,7 +97,7 @@ function buildPrompt(question: string, root: string, map: VaultMap, hints: reado
     'Operate inside this directory only. Explore it with read, grep, and glob. ',
     'You have no write, edit, bash, or delegation tools.',
     '',
-    'Directory map (first ' + VAULT_MAP_DEPTH + ' levels, ' + map.fileCount + ' markdown files):',
+    'Directory map (first ' + String(VAULT_MAP_DEPTH) + ' levels, ' + String(map.fileCount) + ' markdown files):',
     map.tree.length === 0 ? '(empty)' : map.tree,
     '',
     'Full-text candidates (imprecise starting hints — verify by reading the files before relying on them):',

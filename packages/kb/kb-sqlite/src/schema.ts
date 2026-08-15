@@ -44,7 +44,7 @@ export async function openKbDatabase(path: string): Promise<DatabaseSync> {
     if (applicationId === KB_SQLITE_APPLICATION_ID && version !== KB_SQLITE_SCHEMA_VERSION) {
       resetSchema(db)
     }
-    db.exec('PRAGMA application_id = ' + KB_SQLITE_APPLICATION_ID)
+    db.exec('PRAGMA application_id = ' + String(KB_SQLITE_APPLICATION_ID))
     ensureSchema(db)
     return db
   } catch (error) {
@@ -74,5 +74,5 @@ function ensureSchema(db: DatabaseSync): void {
   title UNINDEXED,
   tokenize = 'trigram'
 )`)
-  db.exec('PRAGMA user_version = ' + KB_SQLITE_SCHEMA_VERSION)
+  db.exec('PRAGMA user_version = ' + String(KB_SQLITE_SCHEMA_VERSION))
 }
