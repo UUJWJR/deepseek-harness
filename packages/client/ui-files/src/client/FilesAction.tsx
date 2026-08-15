@@ -16,7 +16,7 @@ import { FilesPanel } from './FilesPanel.tsx'
  * verbs, and the bound translator.
  * @returns the trigger button plus the modal (null when closed).
  */
-export function FilesAction({ wide, list, deletePath, t }: FilesActionProps) {
+export function FilesAction({ wide, list, deletePath, movePath, t }: FilesActionProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -31,7 +31,7 @@ export function FilesAction({ wide, list, deletePath, t }: FilesActionProps) {
         {wide ? t('action.files') : null}
       </Button>
       <Modal open={open} onClose={() => { setOpen(false) }} title={t('panel.title')} closeLabel={t('panel.close')}>
-        <FilesPanel root="/" list={list} deletePath={deletePath} t={t} />
+        <FilesPanel root="/" list={list} deletePath={deletePath} movePath={movePath} t={t} />
       </Modal>
     </>
   )

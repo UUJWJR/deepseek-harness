@@ -49,6 +49,10 @@ export function apply(ctx: ClientContext): void {
         const result = await ctx.remote.files.delete({ path })
         if (!result.ok) throw new Error(result.error.message)
       },
+      movePath: async (source, destination) => {
+        const result = await ctx.remote.files.move({ source, destination })
+        if (!result.ok) throw new Error(result.error.message)
+      },
     }),
   }, FilesAction))
 }

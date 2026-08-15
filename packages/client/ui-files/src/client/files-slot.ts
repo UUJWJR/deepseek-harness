@@ -19,6 +19,8 @@ export interface FilesInjected {
   list: (path: string) => Promise<readonly FileEntry[]>
   /** Delete one file or one empty directory. */
   deletePath: (path: string) => Promise<void>
+  /** Move one path to another. */
+  movePath: (source: string, destination: string) => Promise<void>
 }
 
 /** Full props of the file-tree footer-action entry. */
