@@ -602,7 +602,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/fs/fs-local/src/index.ts:41`](../packages/fs/fs-local/src/index.ts)
+Source: [`packages/fs/fs-local/src/index.ts:42`](../packages/fs/fs-local/src/index.ts)
 
 <a id="deepseek-aidsh-fs-sandbox"></a>
 
@@ -835,6 +835,44 @@ export interface Config {
 ```
 
 Source: [`packages/jobs/jobs-local/src/index.ts:31`](../packages/jobs/jobs-local/src/index.ts)
+
+<a id="deepseek-aidsh-kb-agent"></a>
+
+## `@deepseek-ai/dsh-kb-agent`
+
+Requires: `tools` · `knowledgeBases` · `subagents`
+
+```ts config-catalog
+/** Configuration for the kb-ask tool. */
+export interface Config {
+  /** The ctx.subagents provider name to start the read-only child on. */
+  provider: string
+  /** Model-facing tool name. Defaults to kb-ask. */
+  toolName?: string
+}
+```
+
+Source: [`packages/kb/kb-agent/src/index.ts:22`](../packages/kb/kb-agent/src/index.ts)
+
+<a id="deepseek-aidsh-kb-sqlite"></a>
+
+## `@deepseek-ai/dsh-kb-sqlite`
+
+```ts config-catalog
+/** SQLite-backed knowledge base registry configuration. */
+export interface Config extends KnowledgeBaseConfig {
+  /** Absolute directory holding one per-knowledge-base index file. */
+  indexDir: string
+  /** Default hint count when a request omits a limit. Defaults to 8. */
+  defaultLimit?: number
+  /** Snippet length in FTS5 tokens. Defaults to 40. */
+  snippetTokens?: number
+}
+```
+
+Depends on: [`KnowledgeBaseConfig`](../packages/kb/kb/src/index.ts)
+
+Source: [`packages/kb/kb-sqlite/src/index.ts:27`](../packages/kb/kb-sqlite/src/index.ts)
 
 <a id="deepseek-aidsh-llm-deepseek"></a>
 
@@ -2392,7 +2430,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/fs/tool-fs/src/index.ts:25`](../packages/fs/tool-fs/src/index.ts)
+Source: [`packages/fs/tool-fs/src/index.ts:27`](../packages/fs/tool-fs/src/index.ts)
 
 <a id="deepseek-aidsh-tool-fs-search"></a>
 
@@ -2796,6 +2834,26 @@ export type ToolPresentationMode = 'native' | 'code' | 'both'
 
 Source: [`packages/core/tools/src/index.ts:654`](../packages/core/tools/src/index.ts)
 
+<a id="deepseek-aidsh-trusted-skill-window"></a>
+
+## `@deepseek-ai/dsh-trusted-skill-window`
+
+Requires: `tools`
+
+```ts config-catalog
+/** Configuration for the trusted-skill permission window. */
+export interface Config {
+  /** Skill names the deployment trusts; loading one opens the window. */
+  trustedSkills?: string[]
+  /** Window lifetime in milliseconds. Defaults to 10 minutes. */
+  windowTtlMs?: number
+  /** Maximum auto-approved tool calls per window. Defaults to 50. */
+  maxAutoApprovals?: number
+}
+```
+
+Source: [`packages/interaction/trusted-skill-window/src/index.ts:25`](../packages/interaction/trusted-skill-window/src/index.ts)
+
 <a id="deepseek-aidsh-typert-loader"></a>
 
 ## `@deepseek-ai/dsh-typert-loader`
@@ -2811,6 +2869,25 @@ export interface Config {
 ```
 
 Source: [`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
+
+<a id="deepseek-aidsh-unattended-permission"></a>
+
+## `@deepseek-ai/dsh-unattended-permission`
+
+Requires: `tools`
+
+```ts config-catalog
+/** Configuration for the unattended permission model. */
+export interface Config {
+  /** Skill name to unattended level; skills absent from the map are unrestricted. */
+  unattendedLevels?: Record<string, UnattendedLevel>
+}
+
+/** Unattended level: sandbox, networked, or full. */
+export type UnattendedLevel = 'sandbox' | 'networked' | 'full'
+```
+
+Source: [`packages/interaction/unattended-permission/src/index.ts:27`](../packages/interaction/unattended-permission/src/index.ts)
 
 <a id="deepseek-aidsh-user-approval"></a>
 
@@ -3102,6 +3179,7 @@ Abstract service classes — a deployment loads a concrete implementation packag
 - `@deepseek-ai/dsh-fs` — abstract `FileSystem` ([`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts))
 - `@deepseek-ai/dsh-host-directory-picker` — abstract `DirectoryPicker` ([`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts))
 - `@deepseek-ai/dsh-jobs` — abstract `JobRegistry` ([`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts))
+- `@deepseek-ai/dsh-kb` — abstract `KnowledgeBaseRegistry` ([`packages/kb/kb/src/index.ts`](../packages/kb/kb/src/index.ts))
 - `@deepseek-ai/dsh-sandbox` — abstract `SandboxProvider` ([`packages/sandbox/sandbox/src/index.ts`](../packages/sandbox/sandbox/src/index.ts))
 - `@deepseek-ai/dsh-session-persistence` — abstract `SessionPersistence` ([`packages/session/session-persistence/src/index.ts`](../packages/session/session-persistence/src/index.ts))
 - `@deepseek-ai/dsh-session-query` — abstract `SessionQueryEngine` ([`packages/session-query/session-query/src/index.ts`](../packages/session-query/session-query/src/index.ts))

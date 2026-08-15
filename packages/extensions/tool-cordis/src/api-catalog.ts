@@ -639,6 +639,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [{ name: 'target', description: 'the resolved target to edit.' }, { name: 'edit', description: 'the literal search/replace request.' }, { name: 'expected', description: 'the version guard; omit for an unconditional edit.' }, { name: 'signal', description: 'aborts before atomic publication takes effect.' }, { name: 'sandboxPolicy', description: 'the per-call mode and workspace root this edit runs under; a sandboxing backend fences the edit by it, the bare backend ignores it. Omit to leave the backend its own default.' }],
         returns: 'the outcome, including the version the edit produced.',
       },
+      {
+        signature: 'delete(target: FsTarget, signal?: AbortSignal): Promise<void>',
+        description: 'Delete one file or one empty directory. A non-empty directory fails with \\`FS_NOT_EMPTY\\` (the conflict semantics a bulk delete surfaces as 409). A backend that cannot serve deletion fails with \\`FS_NOT_SUPPORTED\\`.',
+        parameters: [{ name: 'target', description: 'the resolved target to delete.' }, { name: 'signal', description: 'aborts before deletion takes effect.' }],
+        returns: 'resolution once the target is gone.',
+      },
+      {
+        signature: 'move(source: FsTarget, destination: FsTarget, signal?: AbortSignal): Promise<void>',
+        description: 'Move one target to a destination path. Moving a directory into its own descendant fails with \\`FS_LOOP\\` (cycle protection). A backend that cannot serve move fails with \\`FS_NOT_SUPPORTED\\`.',
+        parameters: [{ name: 'source', description: 'the resolved target to move.' }, { name: 'destination', description: 'the resolved destination target.' }, { name: 'signal', description: 'aborts before the rename takes effect.' }],
+        returns: 'resolution once the source is at the destination.',
+      },
     ],
   },
   {
@@ -780,6 +792,43 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Attach an effect-scoped controller that can read and stop jobs. It serves the owners its registering context\'s scope covers, and start refuses an owner no attached controller serves.',
         parameters: [{ name: 'name', description: 'diagnostic label; duplicate names remain independent.' }],
         returns: 'disposer that detaches this controller.',
+      },
+    ],
+  },
+  {
+    key: 'knowledgeBases',
+    summary: 'Knowledge base registry service.',
+    description: 'Knowledge base registry service. Backend-independent members own the named set and its state; a provider implements indexing and retrieval.',
+    methods: [
+      {
+        signature: 'register(name: string, root: string): () => void',
+        description: 'Register a named knowledge base and return its disposer.',
+        parameters: [{ name: 'name', description: 'kebab-case name.' }, { name: 'root', description: 'absolute path to the document root.' }],
+        returns: 'the disposer that unregisters the knowledge base.',
+      },
+      {
+        signature: 'list(): readonly KnowledgeBase[]',
+        description: 'List every registered knowledge base in registration order.',
+        parameters: [],
+        returns: 'immutable knowledge base snapshots.',
+      },
+      {
+        signature: 'get(name: string): KnowledgeBase | undefined',
+        description: 'Resolve one registered knowledge base.',
+        parameters: [{ name: 'name', description: 'kebab-case name.' }],
+        returns: 'the knowledge base snapshot, or undefined when unregistered.',
+      },
+      {
+        signature: 'abstract index(name: string, signal?: AbortSignal): Promise<void>',
+        description: 'Rebuild one knowledge base\'s full-text index.',
+        parameters: [{ name: 'name', description: 'registered knowledge base name.' }, { name: 'signal', description: 'optional cancellation.' }],
+        returns: 'resolution once the index is rebuilt and the state is ready or error.',
+      },
+      {
+        signature: 'abstract retrieve(name: string, request: RetrieveRequest, signal?: AbortSignal): Promise<RetrieveResult>',
+        description: 'Retrieve ranked hints for one query.',
+        parameters: [{ name: 'name', description: 'registered knowledge base name.' }, { name: 'request', description: 'query text and optional limit.' }, { name: 'signal', description: 'optional cancellation.' }],
+        returns: 'ranked retrieval hints.',
       },
     ],
   },
@@ -3246,6 +3295,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface KnobState {\n    preset: string | null;\n    sandbox: SandboxMode | null;\n    approval: ApprovalPolicy | null;\n}',
   },
   {
+    name: 'KnowledgeBase',
+    declaration: 'export interface KnowledgeBase {\n    readonly name: string;\n    readonly root: string;\n    readonly state: KnowledgeBaseState;\n}',
+  },
+  {
+    name: 'KnowledgeBaseState',
+    declaration: 'export type KnowledgeBaseState = \'ready\' | \'indexing\' | \'error\';',
+  },
+  {
     name: 'KvFacet',
     declaration: 'export interface KvFacet {\n    open(descriptor: KvUnitDescriptor): Promise<KvUnit>;\n}',
   },
@@ -3624,6 +3681,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ResumeAgentOptions',
     declaration: 'export interface ResumeAgentOptions {\n    readonly resumeSessionId: SessionId;\n    readonly agentOptions?: AgentOptions;\n    readonly signal?: AbortSignal;\n    readonly setup?: AgentSetup;\n}',
+  },
+  {
+    name: 'RetrievalHint',
+    declaration: 'export interface RetrievalHint {\n    readonly path: string;\n    readonly snippet: string;\n    readonly rank: number;\n}',
+  },
+  {
+    name: 'RetrieveRequest',
+    declaration: 'export interface RetrieveRequest {\n    readonly query: string;\n    readonly limit?: number;\n}',
+  },
+  {
+    name: 'RetrieveResult',
+    declaration: 'export interface RetrieveResult {\n    readonly hints: readonly RetrievalHint[];\n}',
   },
   {
     name: 'RpcError',

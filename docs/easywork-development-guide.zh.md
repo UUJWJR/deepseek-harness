@@ -114,9 +114,9 @@ cp -r <easywork>/.claude/skills/* <projectRoot>/.dsh/skills/
 
 **蓝本**:ADR 0007/0008。DSH 已有 approval/presets/审计事件。
 
-**做法**:interaction 包扩展,或新插件 `trusted-skill-window`:
+**做法**:interaction 包扩展,或新插件 `trusted-skill-window`(示意草图):
 
-```ts
+```tsx
 import type { Context } from '@deepseek-ai/cordis'
 
 export const name = 'trusted-skill-window'

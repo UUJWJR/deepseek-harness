@@ -72,6 +72,7 @@ export const SERVICE_PAGE: Record<string, string> = {
   goals: 'goal.md',
   webServer: 'web-server.md',
   invariants: 'invariants.md',
+  knowledgeBases: 'knowledge-base.md',
   llm: 'llm-streaming.md',
   lsp: 'lsp.md',
   messageFeedback: 'feedback.md',
@@ -578,6 +579,12 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   WorkflowAgentEndInfo: 'event-local snapshot is owned by packages/workflow/workflow/src/index.ts',
   WorkflowAgentInfo: 'event-local snapshot is owned by packages/workflow/workflow/src/index.ts',
   WorkflowResultInfo: 'event-local snapshot is owned by packages/workflow/workflow/src/index.ts',
+  KnowledgeBase: 'knowledge base snapshot is owned by packages/kb/kb/README.md',
+  KnowledgeBaseState: 'knowledge base index state is owned by packages/kb/kb/README.md',
+  KnowledgeChunk: 'knowledge base chunk is owned by packages/kb/kb/README.md',
+  RetrievalHint: 'knowledge base retrieval hint is owned by packages/kb/kb/README.md',
+  RetrieveRequest: 'knowledge base retrieval request is owned by packages/kb/kb/README.md',
+  RetrieveResult: 'knowledge base retrieval result is owned by packages/kb/kb/README.md',
 }
 
 /** Repository data policy consumed by the Cordis catalog projector. */

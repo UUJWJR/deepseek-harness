@@ -114,9 +114,9 @@ cp -r <easywork>/.claude/skills/* <projectRoot>/.dsh/skills/
 
 **Blueprint**: ADR 0007/0008. DSH already has approval/presets/audit events.
 
-**Approach**: extend the interaction package, or add a plugin `trusted-skill-window`:
+**Approach**: extend the interaction package, or add a plugin `trusted-skill-window` (illustrative sketch):
 
-```ts
+```tsx
 import type { Context } from '@deepseek-ai/cordis'
 
 export const name = 'trusted-skill-window'

@@ -264,6 +264,9 @@ type FsErrorCode =
   | 'FS_NOT_OBSERVED'
   | 'FS_AMBIGUOUS_EDIT'
   | 'FS_EDIT_NOT_FOUND'
+  | 'FS_NOT_EMPTY'
+  | 'FS_LOOP'
+  | 'FS_NOT_SUPPORTED'
   | 'FS_ABORTED'
 ```
 
@@ -423,11 +426,32 @@ abstract writeText( target: FsTarget, content: string, expected?: FsWriteIntent,
  * @returns the outcome, including the version the edit produced.
  */
 abstract editText( target: FsTarget, edit: FsEditRequest, expected?: { version: FsVersion }, signal?: AbortSignal, sandboxPolicy?: SandboxExecutionPolicy, ): Promise<FsEditOutcome>
+
+/**
+ * Delete one file or one empty directory. A non-empty directory fails with
+ * \`FS_NOT_EMPTY\` (the conflict semantics a bulk delete surfaces as 409).
+ * A backend that cannot serve deletion fails with \`FS_NOT_SUPPORTED\`.
+ * @param target - the resolved target to delete.
+ * @param signal - aborts before deletion takes effect.
+ * @returns resolution once the target is gone.
+ */
+delete(target: FsTarget, signal?: AbortSignal): Promise<void>
+
+/**
+ * Move one target to a destination path. Moving a directory into its own
+ * descendant fails with \`FS_LOOP\` (cycle protection). A backend that
+ * cannot serve move fails with \`FS_NOT_SUPPORTED\`.
+ * @param source - the resolved target to move.
+ * @param destination - the resolved destination target.
+ * @param signal - aborts before the rename takes effect.
+ * @returns resolution once the source is at the destination.
+ */
+move(source: FsTarget, destination: FsTarget, signal?: AbortSignal): Promise<void>
 ```
 
 Types: [SandboxExecutionPolicy](sandbox.md)
 
-Source: [`packages/fs/fs/src/index.ts:86`](../../packages/fs/fs/src/index.ts)
+Source: [`packages/fs/fs/src/index.ts:87`](../../packages/fs/fs/src/index.ts)
 
 <a id="fs-events"></a>
 
@@ -450,7 +474,7 @@ Single-slot decision for the next FileSystem.editText. Calling `next()` yields a
 'fs/edit-intent'(target: FsTarget, actor: object | undefined, next: () => { version: FsVersion } | undefined | Promise<{ version: FsVersion } | undefined>): Promise<{ version: FsVersion } | undefined>
 ```
 
-Source: [`packages/fs/fs/src/index.ts:66`](../../packages/fs/fs/src/index.ts)
+Source: [`packages/fs/fs/src/index.ts:67`](../../packages/fs/fs/src/index.ts)
 
 <a id="fsobserved--emit"></a>
 
@@ -471,7 +495,7 @@ Record an authoritative positive or negative observation. Listeners must be sync
 'fs/observed'(target: FsTarget, observation: FsObservation, actor: object | undefined): void
 ```
 
-Source: [`packages/fs/fs/src/index.ts:76`](../../packages/fs/fs/src/index.ts)
+Source: [`packages/fs/fs/src/index.ts:77`](../../packages/fs/fs/src/index.ts)
 
 <a id="fswrite-intent--waterfall"></a>
 
@@ -491,5 +515,5 @@ Single-slot decision for the next FileSystem.writeText. Calling `next()` yields 
 'fs/write-intent'(target: FsTarget, actor: object | undefined, next: () => FsWriteIntent | undefined | Promise<FsWriteIntent | undefined>): Promise<FsWriteIntent | undefined>
 ```
 
-Source: [`packages/fs/fs/src/index.ts:58`](../../packages/fs/fs/src/index.ts)
+Source: [`packages/fs/fs/src/index.ts:59`](../../packages/fs/fs/src/index.ts)
 <!-- END GENERATED cordis-surface -->

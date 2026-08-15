@@ -147,6 +147,15 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Companion subpaths register owner-local checks; the service owns selection, uniqueness, child fibers, and package-attributed failures.',
   },
   {
+    key: 'knowledgeBases',
+    pkg: 'kb',
+    title: 'Knowledge base registry',
+    mode: 'seam',
+    implementations: ['kb-sqlite'],
+    consumers: ['kb-agent'],
+    note: 'Owns the named knowledge base set and its index state; the SQLite provider builds the FTS5 trigram index and the kb-agent consumer answers through a read-only subagent.',
+  },
+  {
     key: 'typert',
     pkg: 'typert-registry',
     title: 'Runtime type registry',
