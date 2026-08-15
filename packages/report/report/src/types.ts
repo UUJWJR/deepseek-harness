@@ -34,6 +34,12 @@ export interface Report {
   publishedAt: number
 }
 
+/** A list request narrowed to an optional tag. */
+export interface ReportListRequest {
+  /** Optional tag to filter by. */
+  tag?: string
+}
+
 /** A publish request against one source file. */
 export interface PublishRequest {
   /** The source file to copy and record. */

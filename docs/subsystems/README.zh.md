@@ -35,6 +35,7 @@
 | [extensions.md](extensions.md) | 带版本的动态 Cordis Plugin 与 Package、Host/Client 激活、审批、运行时检查和生命周期撤销 |
 | [filesystem.md](filesystem.md) | 文件系统 seam：`FsTarget`、读/写/编辑结果、观测到的文件状态、`FsErrorCode` |
 | [knowledge-base.md](knowledge-base.md) | 知识库 seam：命名文档根目录、FTS5 trigram 索引、检索提示与只读问答工具 |
+| [report.md](report.md) | 报告（展示区）seam：已发布源副本、按源去重、标签，以及面向模型的 publish/list 工具 |
 | [lsp.md](lsp.md) | LSP 导航 seam：`LspQueryRequest`/`Result`、`LspProvider`/`Service`、四种操作、`LspError` |
 | [skills.md](skills.md) | skill（技能）服务：发现优先级、`SkillSummary`/`SkillDefinition`、会话前缀目录、面向模型的 `skill` 加载 |
 | [compaction.md](compaction.md) | 压缩（compaction）seam：`compaction/*` 会话事件、`CompactionResult`、`CompactionEngine` 接口 |

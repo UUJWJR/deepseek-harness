@@ -5782,6 +5782,9 @@ importers:
       '@deepseek-ai/dsh-report':
         specifier: workspace:^
         version: link:../report
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
 
   packages/report/tool-report:
     devDependencies:

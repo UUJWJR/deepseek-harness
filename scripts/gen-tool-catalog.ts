@@ -63,6 +63,8 @@ import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
 import VmWorkflowEngine from '@deepseek-ai/dsh-workflow-worker-thread'
 import * as ToolRalph from '@deepseek-ai/dsh-tool-ralph'
 import * as ToolWorkflow from '@deepseek-ai/dsh-tool-workflow'
+import LocalReportRegistry from '@deepseek-ai/dsh-report-local'
+import * as ToolReport from '@deepseek-ai/dsh-tool-report'
 import { githubSlug } from './verify-md-links.ts'
 
 /** Attachment seam marker that makes the attachments-conditional `read_image` schema harvestable. */
@@ -550,6 +552,22 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-report',
+    dir: 'tool-report',
+    source: 'packages/report/tool-report/src/index.ts',
+    requires: ['ctx.tools', 'ctx.reports'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tools inject `reports`; boot the local registry over the bare
+      // filesystem so both schemas register without touching a real report root.
+      await ctx.plugin(LocalFileSystem)
+      await ctx.plugin(LocalReportRegistry, { root: resolve(root, '.tmp/tool-catalog/reports') })
+      await ctx.plugin(ToolReport)
+    },
+    note:
+      'report_publish and report_list are the model-facing consumer of the report (display-zone) seam; publication copies the source file into the report root and deduplicates by source, while list narrows to an optional tag.',
   },
 ]
 

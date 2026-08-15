@@ -8,10 +8,11 @@
  */
 
 import { Context, Service } from '@deepseek-ai/cordis'
-import type { PublishRequest, PublishResult, Report } from './types.ts'
+import type { PublishRequest, PublishResult, Report, ReportListRequest } from './types.ts'
 
 export type * from './types.ts'
 export { ReportError, ReportId } from './types.ts'
+export type { ReportListRequest } from './types.ts'
 export { renderMarkdownLite } from './markdown-lite.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -33,25 +34,22 @@ export abstract class ReportRegistry extends Service {
    * Publish one source file: copy it into the report storage and record it,
    * returning the existing report when the source was already published.
    * @param request - source file and optional tags.
-   * @param signal - optional cancellation.
    * @returns the published report and whether it deduplicated to an existing one.
    */
-  abstract publish(request: PublishRequest, signal?: AbortSignal): Promise<PublishResult>
+  abstract publish(request: PublishRequest): Promise<PublishResult>
 
   /**
    * List published reports, optionally narrowed to one tag.
-   * @param tag - optional tag to filter by.
-   * @param signal - optional cancellation.
+   * @param request - optional tag filter.
    * @returns the matching reports in publication order.
    */
-  abstract list(tag?: string, signal?: AbortSignal): Promise<readonly Report[]>
+  abstract list(request?: ReportListRequest): Promise<readonly Report[]>
 
   /**
    * List every distinct tag across published reports.
-   * @param signal - optional cancellation.
    * @returns the tags in first-seen order.
    */
-  abstract tags(signal?: AbortSignal): Promise<readonly string[]>
+  abstract tags(): Promise<readonly string[]>
 }
 
 export default ReportRegistry

@@ -24,6 +24,9 @@
       "path": "../report"
     },
     {
+      "path": "../../typert/protocol"
+    },
+    {
       "path": "../../fs/fs"
     }
   ]

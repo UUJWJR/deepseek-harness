@@ -151,9 +151,9 @@ describe('session cwd resolution', () => {
 })
 
 describe('registration', () => {
-  it('registers read, write, and edit', async () => {
+  it('registers read, write, edit, delete, and move', async () => {
     const { ctx } = await setup()
-    expect(ctx.tools.schemas().map(s => s.name).sort()).toEqual(['edit', 'read', 'write'])
+    expect(ctx.tools.schemas().map(s => s.name).sort()).toEqual(['delete', 'edit', 'move', 'read', 'write'])
   })
 
   it('declares read parallel-safe while write/edit remain exclusive', async () => {
@@ -191,7 +191,7 @@ describe('registration', () => {
     const fiber = await ctx.plugin(ToolFs)
     // Each tool contributes BOTH a schema and a prompt section; disposal must
     // withdraw both, not just the schemas.
-    expect(ctx.tools.schemas()).toHaveLength(3)
+    expect(ctx.tools.schemas()).toHaveLength(5)
     const sectionNames = (a: { sections: { name: string }[] }) => a.sections.map(s => s.name).sort()
     expect(sectionNames(await ctx.systemPrompt.assemble())).toEqual(['deployment:persona', 'harness:identity', 'tool:edit', 'tool:read', 'tool:write'])
     await fiber.dispose()

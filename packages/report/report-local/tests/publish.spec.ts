@@ -48,7 +48,7 @@ describe('LocalReportRegistry', () => {
     await ctx.reports.publish({ source: { workspace: 'w', path: 'b.md' }, tags: ['y'] })
 
     expect(await ctx.reports.list()).toHaveLength(2)
-    expect(await ctx.reports.list('x')).toHaveLength(1)
+    expect(await ctx.reports.list({ tag: 'x' })).toHaveLength(1)
     expect(await ctx.reports.tags()).toEqual(['x', 'y'])
   })
 })

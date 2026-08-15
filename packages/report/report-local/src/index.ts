@@ -12,7 +12,8 @@ import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type Schema from '@deepseek-ai/schemastery'
 import { ReportError, ReportId, ReportRegistry } from '@deepseek-ai/dsh-report'
-import type { PublishRequest, PublishResult, Report } from '@deepseek-ai/dsh-report'
+import type { PublishRequest, PublishResult, Report, ReportListRequest } from '@deepseek-ai/dsh-report'
+import { bindTypertRemote, Remote } from '@deepseek-ai/dsh-typert-protocol'
 import type {} from '@deepseek-ai/dsh-fs'
 
 /** Maximum source bytes one publish copies. */
@@ -40,6 +41,9 @@ export class LocalReportRegistry extends ReportRegistry {
 
   private readonly _root: string
 
+  /** Gateway binding exposing publish/list/tags as browser Remotes. */
+  readonly typertRemote = bindTypertRemote(this, 'reports')
+
   constructor(ctx: Context, config: Config) {
     super(ctx)
     if (typeof config.root !== 'string' || config.root.trim().length === 0 || !config.root.startsWith('/')) {
@@ -48,14 +52,15 @@ export class LocalReportRegistry extends ReportRegistry {
     this._root = config.root
   }
 
-  override async publish(request: PublishRequest, signal?: AbortSignal): Promise<PublishResult> {
-    const existing = (await this.list(undefined, signal)).find(report =>
+  @Remote('publish')
+  override async publish(request: PublishRequest): Promise<PublishResult> {
+    const existing = (await this.list()).find(report =>
       report.source.workspace === request.source.workspace && report.source.path === request.source.path)
     if (existing !== undefined) return { report: existing, deduplicated: true }
 
     const fs = this.ctx.fs
-    const sourceTarget = await fs.resolve(request.source.path, signal === undefined ? {} : { signal })
-    const content = await fs.readBytes(sourceTarget, signal, MAX_SOURCE_BYTES)
+    const sourceTarget = await fs.resolve(request.source.path)
+    const content = await fs.readBytes(sourceTarget, undefined, MAX_SOURCE_BYTES)
 
     const id = ReportId(randomUUID())
     const dir = join(this._root, String(id))
@@ -74,16 +79,16 @@ export class LocalReportRegistry extends ReportRegistry {
     return { report, deduplicated: false }
   }
 
-  override async list(tag?: string, signal?: AbortSignal): Promise<readonly Report[]> {
-    void signal
+  @Remote('list')
+  override async list(request?: ReportListRequest): Promise<readonly Report[]> {
     const metadata = await this._readMetadata()
-    return tag === undefined
+    return request?.tag === undefined
       ? metadata.reports
-      : metadata.reports.filter(report => report.tags.includes(tag))
+      : metadata.reports.filter(report => report.tags.includes(request.tag as string))
   }
 
-  override async tags(signal?: AbortSignal): Promise<readonly string[]> {
-    void signal
+  @Remote('tags')
+  override async tags(): Promise<readonly string[]> {
     const metadata = await this._readMetadata()
     return [...new Set(metadata.reports.flatMap(report => report.tags))]
   }

@@ -1013,6 +1013,31 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'reports',
+    summary: 'Report registry service.',
+    description: 'Report registry service. Owns the published-report vocabulary and the dedup key; a provider implements publish and list.',
+    methods: [
+      {
+        signature: 'abstract publish(request: PublishRequest): Promise<PublishResult>',
+        description: 'Publish one source file: copy it into the report storage and record it, returning the existing report when the source was already published.',
+        parameters: [{ name: 'request', description: 'source file and optional tags.' }],
+        returns: 'the published report and whether it deduplicated to an existing one.',
+      },
+      {
+        signature: 'abstract list(request?: ReportListRequest): Promise<readonly Report[]>',
+        description: 'List published reports, optionally narrowed to one tag.',
+        parameters: [{ name: 'request', description: 'optional tag filter.' }],
+        returns: 'the matching reports in publication order.',
+      },
+      {
+        signature: 'abstract tags(): Promise<readonly string[]>',
+        description: 'List every distinct tag across published reports.',
+        parameters: [],
+        returns: 'the tags in first-seen order.',
+      },
+    ],
+  },
+  {
     key: 'sandbox',
     summary: 'Abstract process-sandbox service.',
     description: 'Abstract process-sandbox service. confine must return enforcing argv or fail closed at wrap or runner-execution time; silent unconfined passthrough is forbidden. Functional probes arbitrate multi-runner chains and may be skipped for a sole candidate, whose own refusal remains the fail-closed end.',
@@ -3615,6 +3640,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface PruneResult {\n    readonly pruned: readonly PrunedEntry[];\n    readonly charsRemoved: number;\n}',
   },
   {
+    name: 'PublishRequest',
+    declaration: 'export interface PublishRequest {\n    source: ReportSource;\n    tags?: readonly string[];\n}',
+  },
+  {
+    name: 'PublishResult',
+    declaration: 'export interface PublishResult {\n    report: Report;\n    deduplicated: boolean;\n}',
+  },
+  {
     name: 'ReadFileLine',
     declaration: 'export interface ReadFileLine {\n    number: number;\n    text: string;\n}',
   },
@@ -3633,6 +3666,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'RedactedSecret',
     declaration: 'export interface RedactedSecret {\n    path: string[];\n    set: boolean;\n}',
+  },
+  {
+    name: 'Report',
+    declaration: 'export interface Report {\n    id: ReportId;\n    source: ReportSource;\n    tags: readonly string[];\n    publishedAt: number;\n}',
+  },
+  {
+    name: 'ReportId',
+    declaration: 'export type ReportId = Branded<\'ReportId\'>;',
+  },
+  {
+    name: 'ReportListRequest',
+    declaration: 'export interface ReportListRequest {\n    tag?: string;\n}',
+  },
+  {
+    name: 'ReportSource',
+    declaration: 'export interface ReportSource {\n    workspace: string;\n    path: string;\n}',
   },
   {
     name: 'RequestContext',

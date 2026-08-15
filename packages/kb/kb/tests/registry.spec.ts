@@ -27,10 +27,10 @@ describe('dsh-kb KnowledgeBaseRegistry', () => {
     const ctx = new Context()
     await ctx.plugin(StubRegistry)
 
-    expect(() => ctx.knowledgeBases.register('Bad Name', '/tmp/a')).toThrowError(KnowledgeBaseError)
-    expect(() => ctx.knowledgeBases.register('ok', 'relative/path')).toThrowError(KnowledgeBaseError)
+    expect(() => ctx.knowledgeBases.register('Bad Name', '/tmp/a')).toThrow(KnowledgeBaseError)
+    expect(() => ctx.knowledgeBases.register('ok', 'relative/path')).toThrow(KnowledgeBaseError)
     ctx.knowledgeBases.register('dup', '/tmp/a')
-    expect(() => ctx.knowledgeBases.register('dup', '/tmp/b')).toThrowError(KnowledgeBaseError)
+    expect(() => ctx.knowledgeBases.register('dup', '/tmp/b')).toThrow(KnowledgeBaseError)
   })
 
   it('returns undefined for an unregistered name', async () => {

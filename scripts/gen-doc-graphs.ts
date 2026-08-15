@@ -156,6 +156,15 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Owns the named knowledge base set and its index state; the SQLite provider builds the FTS5 trigram index and the kb-agent consumer answers through a read-only subagent.',
   },
   {
+    key: 'reports',
+    pkg: 'report',
+    title: 'Published-report (display-zone) registry',
+    mode: 'seam',
+    implementations: ['report-local'],
+    consumers: ['tool-report', 'ui-report'],
+    note: 'Owns the published-report vocabulary and source deduplication; the local provider stores copies under the report root and the tool consumer exposes publish/list to the model.',
+  },
+  {
     key: 'typert',
     pkg: 'typert-registry',
     title: 'Runtime type registry',

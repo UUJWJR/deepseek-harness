@@ -41,6 +41,7 @@
 | `@deepseek-ai/dsh-tool-todo` | `todo_write` | `ctx.tools`、`owning Agent session` | `tool/call`、`todo/write`、`tool/result` | - | todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为检查清单。`allowParallelInProgress` 是没有默认值的必填项，因此本目录明确选择 `true`，对应描述允许同时存在多个 `in_progress` 项。选择 `false` 的部署会获得同一工具，但描述会要求只能有 1 个活动任务。 |
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`、`ctx.workflowEngine`、`ctx.systemPrompt`、`a calling Agent (exec.agent parents the script children)` | `tool/call`、`tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`、`web_search` | `ctx.tools`、`ctx.web`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可见 schema 在更换后端时保持稳定。 |
+| `@deepseek-ai/dsh-tool-report` | `report_list`、`report_publish` | `ctx.tools`、`ctx.reports` | `tool/call`、`tool/result` | - | report_publish 和 report_list 是报告（展示区）seam 的模型可见消费方；发布将源文件复制进报告根目录并按源去重，列举则按可选标签过滤。 |
 
 <a id="deepseek-aidsh-tool-ask-user"></a>
 
@@ -1923,3 +1924,60 @@ todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为
 来源：[`packages/web/tool-web/src/index.ts`](../packages/web/tool-web/src/index.ts)
 
 web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可见 schema 在更换后端时保持稳定。
+
+<a id="deepseek-aidsh-tool-report"></a>
+
+## `@deepseek-ai/dsh-tool-report`
+
+### `report_list`
+
+列举已发布报告，可选按单个标签过滤。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tag": {
+      "type": "string",
+      "description": "Optional tag to filter by."
+    }
+  }
+}
+```
+
+来源：[(`packages/report/tool-report/src/index.ts`)](../packages/report/tool-report/src/index.ts)
+
+### `report_publish`
+
+将文件发布进展示区画廊，复制并带标签记录。重复发布同一源会返回既有报告。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Source file path to publish."
+    },
+    "workspace": {
+      "type": "string",
+      "description": "Workspace the source file belongs to, used as part of the dedup key."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags to attach to the report.",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "file_path",
+    "workspace"
+  ]
+}
+```
+
+来源：[(`packages/report/tool-report/src/index.ts`)](../packages/report/tool-report/src/index.ts)
+
+report_publish 和 report_list 是报告（展示区）seam 的模型可见消费方；发布将源文件复制进报告根目录并按源去重，列举则按可选标签过滤。

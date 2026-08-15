@@ -39,6 +39,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-todo` | `todo_write` | `ctx.tools`, `owning Agent session` | `tool/call`, `todo/write`, `tool/result` | - | todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task. |
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
+| `@deepseek-ai/dsh-tool-report` | `report_list`, `report_publish` | `ctx.tools`, `ctx.reports` | `tool/call`, `tool/result` | - | report_publish and report_list are the model-facing consumer of the report (display-zone) seam; publication copies the source file into the report root and deduplicates by source, while list narrows to an optional tag. |
 
 <a id="deepseek-aidsh-tool-ask-user"></a>
 
@@ -1918,3 +1919,60 @@ Search the web for current information. Returns an optional summary answer and a
 Source: [`packages/web/tool-web/src/index.ts`](../packages/web/tool-web/src/index.ts)
 
 web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps.
+
+<a id="deepseek-aidsh-tool-report"></a>
+
+## `@deepseek-ai/dsh-tool-report`
+
+### `report_list`
+
+List published reports, optionally narrowed to one tag.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tag": {
+      "type": "string",
+      "description": "Optional tag to filter by."
+    }
+  }
+}
+```
+
+Source: [`packages/report/tool-report/src/index.ts`](../packages/report/tool-report/src/index.ts)
+
+### `report_publish`
+
+Publish a file into the display-zone gallery, copying it and recording it with tags. Re-publishing the same source returns the existing report.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Source file path to publish."
+    },
+    "workspace": {
+      "type": "string",
+      "description": "Workspace the source file belongs to, used as part of the dedup key."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags to attach to the report.",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "file_path",
+    "workspace"
+  ]
+}
+```
+
+Source: [`packages/report/tool-report/src/index.ts`](../packages/report/tool-report/src/index.ts)
+
+report_publish and report_list are the model-facing consumer of the report (display-zone) seam; publication copies the source file into the report root and deduplicates by source, while list narrows to an optional tag.

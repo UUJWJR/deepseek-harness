@@ -119,7 +119,7 @@ export function apply(ctx: Context): void {
     },
     async execute(args: ListArgs, exec) {
       void exec
-      const reports = await ctx.reports.list(args.tag)
+      const reports = await ctx.reports.list(args.tag === undefined ? undefined : { tag: args.tag })
       return { reports: reports.map(report => ({ ...report, tags: [...report.tags] })) }
     },
   }))
