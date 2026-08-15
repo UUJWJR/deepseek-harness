@@ -1,43 +1,78 @@
 /**
- * Compact tool-call plugin, browser half: when the compactMode config is on,
- * registers a per-call compact tool ConversationNodeDefinition and its keyed
- * capsule renderer. Each tool call then also renders as a one-line capsule
- * (name + settled marker) beside the full call tree.
+ * Compact tool-call plugin, browser half: binds the durable compactMode
+ * setting and registers the compact tool ConversationNodeDefinition + its
+ * keyed capsule renderer when the setting is on, plus the feature-owned
+ * compact-mode preference row in the settings General section.
  * @module @deepseek-ai/dsh-client-ui-tool-compact/client
  */
 
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-// Type-only: pulls the 'conversation.chat.node' SlotMap and the ChatNodeDataMap merge.
+// Type-only: pulls the 'conversation.chat.node' + 'settings.general.item' SlotMap and ChatNodeDataMap merge.
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import z from '@deepseek-ai/schemastery'
-import type Schema from '@deepseek-ai/schemastery'
+import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+// Type-only: pulls the locale plugin's Context merge (ctx.locale).
+import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type { BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
+import { COMPACT_MODE_FIELD, COMPACT_SETTINGS_NAMESPACE, type CompactSettings } from '../compact-settings.ts'
 import { compactToolDefinition } from './compact-definition.ts'
+import { CompactModeRow, type CompactModeRowInjected } from './CompactModeRow.tsx'
 import { CompactToolView } from './CompactToolView.tsx'
+import { createCompactModeStore } from './settings-store.ts'
+import { en, zh } from './locales.ts'
 
-/** Configuration for the compact tool-call plugin. */
-export interface Config {
-  /** Register the compact tool capsules; defaults to off. */
-  compactMode?: boolean
-}
+export type { CompactModeRowInjected, CompactModeRowProps } from './CompactModeRow.tsx'
+export type { CompactToolChatData } from './compact-definition.ts'
 
-export const Config: Schema<Config> = z.object({
-  compactMode: z.boolean().default(false),
-})
+/** Dictionary namespace owned by this plugin. */
+const NS = 'tool-compact'
 
-/** Required services: the conversation-node registry and the slot registry. */
-export const inject = ['slots', 'conversationEvents']
+/** Required services: registries, the settings scope, the locale, and the settings transport. */
+export const inject = ['slots', 'conversationEvents', 'locale', 'connection', 'remote', 'settingsScope']
 
 /**
- * Client plugin body: when compactMode is on, register the compact tool
- * lifecycle and its keyed renderer.
+ * Client plugin body: mirror the durable compactMode setting into the
+ * Definition registration, and register the preference row + capsule renderer.
  * @param ctx - client root context.
- * @param config - validated compact-mode switch.
  */
-export function apply(ctx: ClientContext, config: Config): void {
-  if (config.compactMode !== true) return
-  ctx.conversationEvents.register(compactToolDefinition)
+export function apply(ctx: ClientContext): void {
+  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-tool-compact: dictionaries')
+
+  const host = ctx.settingsScope.bind<CompactSettings>({ namespace: COMPACT_SETTINGS_NAMESPACE })
+
+  // The renderer is always registered; it only renders while the Definition emits nodes.
   ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
     name: 'conversation.chat.node',
     key: 'tool-call-compact',
   }, CompactToolView))
+
+  let disposeCompact: (() => void) | undefined
+  const syncDefinition = (): void => {
+    const enabled = host.getSnapshot().value?.compactMode ?? false
+    if (enabled && disposeCompact === undefined) {
+      disposeCompact = ctx.conversationEvents.register(compactToolDefinition)
+    } else if (!enabled && disposeCompact !== undefined) {
+      disposeCompact()
+      disposeCompact = undefined
+    }
+  }
+  ctx.effect(() => host.subscribe(syncDefinition), 'ui-tool-compact: definition sync')
+  syncDefinition()
+
+  const store = createCompactModeStore()
+  let bound: BoundActions<typeof store> | undefined
+  const syncRow = (): void => { bound?.sync(host.getSnapshot().value?.compactMode ?? false) }
+  ctx.effect(() => host.subscribe(syncRow), 'ui-tool-compact: row sync')
+  const injected = (actions: BoundActions<typeof store>): CompactModeRowInjected => {
+    bound = actions
+    syncRow()
+    return { setCompactMode: (enabled) => { void host.set(COMPACT_MODE_FIELD, enabled) } }
+  }
+  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
+    name: 'settings.general.item',
+    id: 'compact-mode',
+    order: 40,
+    store,
+    locale: NS,
+    inject: injected,
+  }, CompactModeRow))
 }

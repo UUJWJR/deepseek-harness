@@ -9,13 +9,7 @@
   ],
   "references": [
     {
-      "path": "../../../vendor/cordis"
-    },
-    {
-      "path": "../../../vendor/schemastery"
-    },
-    {
-      "path": "../../runtime-diagnostics/invariants"
+      "path": "../locale"
     },
     {
       "path": "../runtime"
@@ -24,7 +18,22 @@
       "path": "../ui-conversation"
     },
     {
+      "path": "../ui-settings"
+    },
+    {
       "path": "../ui-slots"
+    },
+    {
+      "path": "../../settings/settings"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
     }
   ]
 }

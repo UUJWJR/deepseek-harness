@@ -282,6 +282,9 @@
     - id: ui-files
       name: '@deepseek-ai/dsh-client-ui-files'
 
+    - id: ui-tool-compact
+      name: '@deepseek-ai/dsh-client-ui-tool-compact'
+
     - id: ui-trajectory
       name: '@deepseek-ai/dsh-client-ui-trajectory'
 
