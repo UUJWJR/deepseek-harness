@@ -11,6 +11,8 @@ import type {} from '@deepseek-ai/dsh-user-approval'
 import { applyReadTool, READ_LIMIT, STREAM_MIN_SIZE } from './read.ts'
 import { applyWriteTool } from './write.ts'
 import { applyEditTool } from './edit.ts'
+import { applyDeleteTool } from './delete.ts'
+import { applyMoveTool } from './move.ts'
 import { applyReadImageTool } from './read-image.ts'
 import { READ_MAX_BYTES, READ_MAX_LINE_LENGTH } from './read-render.ts'
 import { FsSandboxController } from './sandbox.ts'
@@ -76,4 +78,6 @@ export function apply(ctx: Context, config: Config): void {
   const sandbox = new FsSandboxController(ctx)
   applyWriteTool(ctx, sandbox)
   applyEditTool(ctx, sandbox)
+  applyDeleteTool(ctx, sandbox)
+  applyMoveTool(ctx, sandbox)
 }
