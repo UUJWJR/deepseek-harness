@@ -147,6 +147,7 @@
     { "path": "./packages/kb/kb-sqlite" },
     { "path": "./packages/kb/kb-agent" },
     { "path": "./packages/report/report" },
+    { "path": "./packages/report/report-local" },
     { "path": "./packages/settings/settings" },
     { "path": "./packages/settings/settings-file" },
     { "path": "./packages/credentials/credentials" },
