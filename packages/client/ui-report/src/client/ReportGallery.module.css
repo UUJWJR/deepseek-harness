@@ -1,0 +1,17 @@
+.gallery {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) minmax(200px, 320px);
+  gap: 16px;
+  min-height: 320px;
+  min-width: 0;
+}
+
+.pane {
+  min-width: 0;
+  overflow: auto;
+}
+
+.preview {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
