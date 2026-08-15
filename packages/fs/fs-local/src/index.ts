@@ -6,6 +6,7 @@
 
 import { Context } from '@deepseek-ai/cordis'
 import { constants as bufferConstants } from 'node:buffer'
+import { rename, rm } from 'node:fs/promises'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import z from '@deepseek-ai/schemastery'
@@ -215,6 +216,33 @@ export class LocalFileSystem extends FileSystem {
         // is a storage detail the applied-hunk diff ignores.
         after: normalizeLineEndings(content),
       }
+    })
+  }
+
+  override async delete(target: FsTarget, signal?: AbortSignal): Promise<void> {
+    if (signal?.aborted) throw new FsError('delete aborted', 'FS_ABORTED')
+    await this.withLock(target.targetKey, async () => {
+      const info = await probe(target.targetKey)
+      if (!info) throw new FsError(`cannot delete "${target.displayPath}": not found`, 'FS_NOT_FOUND')
+      if (info.type === 'directory') {
+        const entries = await listDirectory({ displayPath: target.displayPath, targetKey: target.targetKey })
+        if (entries.length > 0) {
+          throw new FsError(`cannot delete "${target.displayPath}": directory is not empty`, 'FS_NOT_EMPTY')
+        }
+      }
+      await rm(target.targetKey, { recursive: false, force: false })
+    })
+  }
+
+  override async move(source: FsTarget, destination: FsTarget, signal?: AbortSignal): Promise<void> {
+    if (signal?.aborted) throw new FsError('move aborted', 'FS_ABORTED')
+    await this.withLock(source.targetKey, async () => {
+      const info = await probe(source.targetKey)
+      if (!info) throw new FsError(`cannot move "${source.displayPath}": not found`, 'FS_NOT_FOUND')
+      if (info.type === 'directory' && this.contains(source, destination)) {
+        throw new FsError(`cannot move "${source.displayPath}" into its own descendant`, 'FS_LOOP')
+      }
+      await rename(source.targetKey, destination.targetKey)
     })
   }
 

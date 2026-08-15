@@ -185,6 +185,9 @@ export type FsErrorCode =
   | 'FS_NOT_OBSERVED'
   | 'FS_AMBIGUOUS_EDIT'
   | 'FS_EDIT_NOT_FOUND'
+  | 'FS_NOT_EMPTY'
+  | 'FS_LOOP'
+  | 'FS_NOT_SUPPORTED'
   | 'FS_ABORTED'
 
 /**

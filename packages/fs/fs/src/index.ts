@@ -10,6 +10,7 @@
 
 import { Context, Service } from '@deepseek-ai/cordis'
 import type { SandboxExecutionPolicy, SandboxMode } from '@deepseek-ai/dsh-sandbox'
+import { FsError } from './types.ts'
 import type {
   FsDirEntry,
   FsEditOutcome,
@@ -247,6 +248,36 @@ export abstract class FileSystem extends Service {
     signal?: AbortSignal,
     sandboxPolicy?: SandboxExecutionPolicy,
   ): Promise<FsEditOutcome>
+
+  /**
+   * Delete one file or one empty directory. A non-empty directory fails with
+   * \`FS_NOT_EMPTY\` (the conflict semantics a bulk delete surfaces as 409).
+   * A backend that cannot serve deletion fails with \`FS_NOT_SUPPORTED\`.
+   * @param target - the resolved target to delete.
+   * @param signal - aborts before deletion takes effect.
+   * @returns resolution once the target is gone.
+   */
+  delete(target: FsTarget, signal?: AbortSignal): Promise<void> {
+    void target
+    void signal
+    return Promise.reject(new FsError('delete is not supported by this filesystem backend', 'FS_NOT_SUPPORTED'))
+  }
+
+  /**
+   * Move one target to a destination path. Moving a directory into its own
+   * descendant fails with \`FS_LOOP\` (cycle protection). A backend that
+   * cannot serve move fails with \`FS_NOT_SUPPORTED\`.
+   * @param source - the resolved target to move.
+   * @param destination - the resolved destination target.
+   * @param signal - aborts before the rename takes effect.
+   * @returns resolution once the source is at the destination.
+   */
+  move(source: FsTarget, destination: FsTarget, signal?: AbortSignal): Promise<void> {
+    void source
+    void destination
+    void signal
+    return Promise.reject(new FsError('move is not supported by this filesystem backend', 'FS_NOT_SUPPORTED'))
+  }
 }
 
 export default FileSystem
