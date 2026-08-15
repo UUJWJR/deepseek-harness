@@ -65,6 +65,7 @@ import * as ToolRalph from '@deepseek-ai/dsh-tool-ralph'
 import * as ToolWorkflow from '@deepseek-ai/dsh-tool-workflow'
 import LocalReportRegistry from '@deepseek-ai/dsh-report-local'
 import * as ToolReport from '@deepseek-ai/dsh-tool-report'
+import * as ToolHtmlToPdf from '@deepseek-ai/dsh-tool-html-to-pdf'
 import { githubSlug } from './verify-md-links.ts'
 
 /** Attachment seam marker that makes the attachments-conditional `read_image` schema harvestable. */
@@ -568,6 +569,22 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'report_publish and report_list are the model-facing consumer of the report (display-zone) seam; publication copies the source file into the report root and deduplicates by source, while list narrows to an optional tag.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-html-to-pdf',
+    dir: 'tool-html-to-pdf',
+    source: 'packages/report/tool-html-to-pdf/src/index.ts',
+    requires: ['ctx.tools', 'ctx.fs', 'ctx.subprocess'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tool injects `fs` + `subprocess`; the schema harvest never renders,
+      // so a dummy renderScript path satisfies the config.
+      await ctx.plugin(LocalFileSystem)
+      await ctx.plugin(LocalSubprocessRuntime)
+      await ctx.plugin(ToolHtmlToPdf, { renderScript: '/tmp/unused-render.py' })
+    },
+    note:
+      'html_to_pdf renders one HTML file through the html-to-pdf render.py in a child process; the model-visible schema is only the input and optional output path.',
   },
 ]
 

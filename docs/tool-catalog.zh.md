@@ -42,6 +42,7 @@
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`、`ctx.workflowEngine`、`ctx.systemPrompt`、`a calling Agent (exec.agent parents the script children)` | `tool/call`、`tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`、`web_search` | `ctx.tools`、`ctx.web`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可见 schema 在更换后端时保持稳定。 |
 | `@deepseek-ai/dsh-tool-report` | `report_list`、`report_publish` | `ctx.tools`、`ctx.reports` | `tool/call`、`tool/result` | - | report_publish 和 report_list 是报告（展示区）seam 的模型可见消费方；发布将源文件复制进报告根目录并按源去重，列举则按可选标签过滤。 |
+| `@deepseek-ai/dsh-tool-html-to-pdf` | `html_to_pdf` | `ctx.tools`、`ctx.fs`、`ctx.subprocess` | `tool/call`、`tool/result` | - | html_to_pdf 在子进程中通过 html-to-pdf 渲染器渲染一个 HTML 文件；模型可见 schema 仅包含输入与可选输出路径。 |
 
 <a id="deepseek-aidsh-tool-ask-user"></a>
 
@@ -1981,3 +1982,34 @@ web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可�
 来源：[(`packages/report/tool-report/src/index.ts`)](../packages/report/tool-report/src/index.ts)
 
 report_publish 和 report_list 是报告（展示区）seam 的模型可见消费方；发布将源文件复制进报告根目录并按源去重，列举则按可选标签过滤。
+
+<a id="deepseek-aidsh-tool-html-to-pdf"></a>
+
+## `@deepseek-ai/dsh-tool-html-to-pdf`
+
+### `html_to_pdf`
+
+通过 html-to-pdf 渲染器渲染一个 HTML 文件并返回输出 PDF 路径。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "HTML file to render."
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Output PDF path. Defaults to the input path with a .pdf extension."
+    }
+  },
+  "required": [
+    "file_path"
+  ]
+}
+```
+
+来源：[(`packages/report/tool-html-to-pdf/src/index.ts`)](../packages/report/tool-html-to-pdf/src/index.ts)
+
+html_to_pdf 在子进程中通过 html-to-pdf 渲染器渲染一个 HTML 文件；模型可见 schema 仅包含输入与可选输出路径。

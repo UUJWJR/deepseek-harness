@@ -2501,6 +2501,24 @@ export interface Config {
 
 来源：[`packages/goal/tool-goal/src/index.ts:26`](../packages/goal/tool-goal/src/index.ts)
 
+<a id="deepseek-aidsh-tool-html-to-pdf"></a>
+
+## `@deepseek-ai/dsh-tool-html-to-pdf`
+
+需要：`tools` · `fs` · `subprocess`
+
+```ts config-catalog
+/** Configuration for the html_to_pdf tool. */
+export interface Config {
+  /** Absolute path to the html-to-pdf render.py script. */
+  renderScript: string
+  /** Python interpreter that runs the script. Defaults to `python3`. */
+  python?: string
+}
+```
+
+来源：[`packages/report/tool-html-to-pdf/src/index.ts:21`](../packages/report/tool-html-to-pdf/src/index.ts)
+
 <a id="deepseek-aidsh-tool-jobs"></a>
 
 ## `@deepseek-ai/dsh-tool-jobs`

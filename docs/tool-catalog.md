@@ -40,6 +40,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
 | `@deepseek-ai/dsh-tool-report` | `report_list`, `report_publish` | `ctx.tools`, `ctx.reports` | `tool/call`, `tool/result` | - | report_publish and report_list are the model-facing consumer of the report (display-zone) seam; publication copies the source file into the report root and deduplicates by source, while list narrows to an optional tag. |
+| `@deepseek-ai/dsh-tool-html-to-pdf` | `html_to_pdf` | `ctx.tools`, `ctx.fs`, `ctx.subprocess` | `tool/call`, `tool/result` | - | html_to_pdf renders one HTML file through the html-to-pdf render.py in a child process; the model-visible schema is only the input and optional output path. |
 
 <a id="deepseek-aidsh-tool-ask-user"></a>
 
@@ -1976,3 +1977,34 @@ Publish a file into the display-zone gallery, copying it and recording it with t
 Source: [`packages/report/tool-report/src/index.ts`](../packages/report/tool-report/src/index.ts)
 
 report_publish and report_list are the model-facing consumer of the report (display-zone) seam; publication copies the source file into the report root and deduplicates by source, while list narrows to an optional tag.
+
+<a id="deepseek-aidsh-tool-html-to-pdf"></a>
+
+## `@deepseek-ai/dsh-tool-html-to-pdf`
+
+### `html_to_pdf`
+
+Render an HTML file to PDF through the html-to-pdf renderer and return the output PDF path.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "HTML file to render."
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Output PDF path. Defaults to the input path with a .pdf extension."
+    }
+  },
+  "required": [
+    "file_path"
+  ]
+}
+```
+
+Source: [`packages/report/tool-html-to-pdf/src/index.ts`](../packages/report/tool-html-to-pdf/src/index.ts)
+
+html_to_pdf renders one HTML file through the html-to-pdf render.py in a child process; the model-visible schema is only the input and optional output path.

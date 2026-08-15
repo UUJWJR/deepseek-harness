@@ -149,6 +149,7 @@
     { "path": "./packages/report/report" },
     { "path": "./packages/report/report-local" },
     { "path": "./packages/report/tool-report" },
+    { "path": "./packages/report/tool-html-to-pdf" },
     { "path": "./packages/settings/settings" },
     { "path": "./packages/settings/settings-file" },
     { "path": "./packages/credentials/credentials" },
