@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-15-easywork-skills-migration.md
-2026-08-15-easywork-skills-migration.md: 398bc26a39b3ce288c859879f462821c072f5044
-2026-08-15-easywork-skills-migration.zh.md: f1a56133ceefdab45d1bd965555551ec20a2b68e
+2026-08-15-easywork-skills-migration.md: 4f5566abda14abee8684c351ab4b91ccba2bf806
+2026-08-15-easywork-skills-migration.zh.md: eef8fa87acc00fea57012e503a11ef3b7616150c

@@ -30,4 +30,4 @@ EasyWork 是一个独立的单用户 React/Express/SQLite 应用,其可复用的
 
 ## 后果
 
-11 个技能立即被运行中的 DSH 技能目录发现,确定性 Python 管线(`data-to-md/convert.py`、`report-publish/summarize.py`、`report-publish/slice-ref.py`)在迁移后的路径下端到端跑通。指南所写"12 个技能"实为 11 个加 `references/` 库,且没有任何技能内嵌 EasyWork `/api/` 调用,故该移植顾虑不成立。report-publish 的 `{tmpDir}` 公式 `{baseDir}/../../../tmp/` 仍解析到 `~/tmp/` 而非项目临时目录——已记录的漂移,尚未修改。全链路模型驱动的简报模式跑通待 `DEEPSEEK_API_KEY`;无 key 验证仅覆盖技能发现与脚本管线。
+11 个技能立即被运行中的 DSH 技能目录发现,确定性 Python 管线(`data-to-md/convert.py`、`report-publish/summarize.py`、`report-publish/slice-ref.py`)在迁移后的路径下端到端跑通。指南所写"12 个技能"实为 11 个加 `references/` 库,且没有任何技能内嵌 EasyWork `/api/` 调用,故该移植顾虑不成立。report-publish 的 `{tmpDir}` 公式(`{baseDir}/../../../tmp/`)落在系统临时目录(`/tmp/report-publish-…`)而非项目临时目录——已记录的漂移,尚未修改。全链路模型驱动的简报模式已跑通:模型经 `skill` 工具加载 report-publish,从样例 CSV 端到端产出简报 HTML(`sample-text.html`,47 KB)。
