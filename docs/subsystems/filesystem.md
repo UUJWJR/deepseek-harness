@@ -288,6 +288,36 @@ type FsErrorCode =
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — this section is byte-identical in both language sides of the page. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxfiles--filesremote"></a>
+
+### `ctx.files` — `FilesRemote`
+
+Browser-facing filesystem Remote service.
+
+```ts cordis-catalog
+/**
+ * List one directory level.
+ * @param request - absolute directory path to list.
+ * @returns the children, name-sorted, with absolute paths for follow-ups.
+ */
+@Remote('list') async list(request: FileListRequest): Promise<readonly FileEntry[]>
+
+/**
+ * Delete one file or one empty directory.
+ * @param request - absolute path to delete.
+ */
+@Remote('delete') async delete(request: FileDeleteRequest): Promise<void>
+
+/**
+ * Move one path to another; moving a directory into its own descendant
+ * fails with the backend's loop protection.
+ * @param request - absolute source and destination paths.
+ */
+@Remote('move') async move(request: FileMoveRequest): Promise<void>
+```
+
+Source: [`packages/fs/fs-remote/src/index.ts:22`](../../packages/fs/fs-remote/src/index.ts)
+
 <a id="ctxfs--filesystem-abstract-seam"></a>
 
 ### `ctx.fs` — `FileSystem` (abstract seam)

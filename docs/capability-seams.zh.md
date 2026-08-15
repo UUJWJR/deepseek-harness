@@ -44,6 +44,8 @@ flowchart LR
   pkg_report_local["report-local"]
   pkg_tool_report["tool-report"]
   pkg_ui_report["ui-report"]
+  pkg_fs_remote["fs-remote"]
+  svc_files["ctx.files<br/>Browser-facing filesystem Remote"]
   pkg_typert_registry["typert-registry"]
   svc_typert["ctx.typert<br/>Runtime type registry"]
   pkg_typert_loader["typert-loader"]
@@ -233,6 +235,7 @@ flowchart LR
   pkg_fs --> svc_fs
   pkg_fs_e2b --> svc_fs
   pkg_fs_local --> svc_fs
+  pkg_fs_remote --> svc_files
   pkg_fs_sandbox --> svc_fs
   pkg_goal --> svc_goals
   pkg_invariants --> svc_invariants
@@ -437,6 +440,7 @@ flowchart LR
 | `ctx.invariants` | `core` | [`invariants`](../packages/runtime-diagnostics/invariants) | - | [`session`](../packages/core/session), [`agent`](../packages/core/agent), [`scope`](../packages/core/scope), [`agent-loop`](../packages/core/agent-loop) | - | 配套子路径注册所属包本地的检查；该服务负责选择、唯一性、子 fiber，以及标明所属包的失败。 |
 | `ctx.knowledgeBases` | `seam` | [`kb`](../packages/kb/kb) | [`kb-sqlite`](../packages/kb/kb-sqlite) | [`kb-agent`](../packages/kb/kb-agent) | - | 拥有命名知识库集合及其索引状态；SQLite 提供方构建 FTS5 trigram 索引，kb-agent 消费方通过只读 subagent 作答。 |
 | `ctx.reports` | `seam` | [`report`](../packages/report/report) | [`report-local`](../packages/report/report-local) | [`tool-report`](../packages/report/tool-report), `ui-report` | - | 拥有已发布报告词汇与按源去重；本地提供方在报告根目录下存储副本，工具消费方向模型暴露 publish/list。 |
+| `ctx.files` | `core` | [`fs-remote`](../packages/fs/fs-remote) | - | - | - | 在 ctx.fs 之上暴露基于路径的 list/delete/move，使 Web GUI 能渲染文件树并应用变更；绝对路径走线传输。 |
 | `ctx.typert` | `core` | [`typert-registry`](../packages/typert/registry) | - | [`typert-loader`](../packages/typert/loader), [`api-gateway`](../packages/api/gateway) | - | 插件直接或通过 dsh-typert-loader 注册实时 zod 贡献；API 网关消费调用描述符和提供方，其他运行时消费方则在各自边界查询 schema 与反射元数据。 |
 | `ctx.typertGateway` | `core` | [`api-gateway`](../packages/api/gateway) | - | - | - | 将生成的 Remote 描述符与实时 Cordis 服务关联，解析已注册的身份，并通过共享的 Connection RPC 载体提供一元调用。 |
 | `ctx.sessionPersistence` | `seam` | [`session-persistence`](../packages/session/session-persistence) | [`session-persistence-jsonl`](../packages/session/session-persistence-jsonl), [`session-persistence-sqlite`](../packages/session/session-persistence-sqlite) | [`agent-loop`](../packages/core/agent-loop), [`tool-bash`](../packages/shell/tool-bash), [`hooks-claude-code`](../packages/hooks/hooks-claude-code), [`hooks-codex`](../packages/hooks/hooks-codex), [`session-query`](../packages/session-query/session-query), [`session-query-sqlite`](../packages/session-query/session-query-sqlite), [`message-feedback`](../packages/feedback/message-feedback) | - | 各后端持久化同一套 SessionEvent 词汇；应用在组合时选择后端。 |

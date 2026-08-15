@@ -40,6 +40,9 @@
       "path": "../../report/report-local"
     },
     {
+      "path": "../../fs/fs-remote"
+    },
+    {
       "path": "../../host/plugin-inventory"
     },
     {

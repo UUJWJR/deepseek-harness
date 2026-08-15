@@ -563,6 +563,29 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'files',
+    summary: 'Browser-facing filesystem Remote service.',
+    description: 'Browser-facing filesystem Remote service.',
+    methods: [
+      {
+        signature: '@Remote(\'list\') async list(request: FileListRequest): Promise<readonly FileEntry[]>',
+        description: 'List one directory level.',
+        parameters: [{ name: 'request', description: 'absolute directory path to list.' }],
+        returns: 'the children, name-sorted, with absolute paths for follow-ups.',
+      },
+      {
+        signature: '@Remote(\'delete\') async delete(request: FileDeleteRequest): Promise<void>',
+        description: 'Delete one file or one empty directory.',
+        parameters: [{ name: 'request', description: 'absolute path to delete.' }],
+      },
+      {
+        signature: '@Remote(\'move\') async move(request: FileMoveRequest): Promise<void>',
+        description: 'Move one path to another; moving a directory into its own descendant fails with the backend\'s loop protection.',
+        parameters: [{ name: 'request', description: 'absolute source and destination paths.' }],
+      },
+    ],
+  },
+  {
     key: 'fs',
     summary: 'Abstract filesystem provider.',
     description: 'Abstract filesystem provider. Targets must preserve identity across aliases; reads expose regular UTF-8 text or typed errors, listings are stable and content-free, and mutations are atomic. Optional guards add stale protection without changing the unguarded provider contract.',
@@ -3110,12 +3133,28 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface EpochHeader {\n    config: LlmCallConfig;\n    adapterDefaults?: LlmCallConfigAdapterDefaults;\n    system?: string;\n    tools?: ToolSchema[];\n}',
   },
   {
+    name: 'FileDeleteRequest',
+    declaration: 'export interface FileDeleteRequest {\n    path: string;\n}',
+  },
+  {
     name: 'FileDiff',
     declaration: 'export interface FileDiff {\n    path: string;\n    oldText: string | null;\n    newText: string;\n}',
   },
   {
+    name: 'FileEntry',
+    declaration: 'export interface FileEntry {\n    name: string;\n    path: string;\n    type: \'file\' | \'directory\' | \'other\';\n    hidden: boolean;\n}',
+  },
+  {
+    name: 'FileListRequest',
+    declaration: 'export interface FileListRequest {\n    path: string;\n}',
+  },
+  {
     name: 'FileLocation',
     declaration: 'export interface FileLocation {\n    path: string;\n    line?: number;\n}',
+  },
+  {
+    name: 'FileMoveRequest',
+    declaration: 'export interface FileMoveRequest {\n    source: string;\n    destination: string;\n}',
   },
   {
     name: 'FinishReason',

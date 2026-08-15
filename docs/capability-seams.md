@@ -42,6 +42,8 @@ flowchart LR
   pkg_report_local["report-local"]
   pkg_tool_report["tool-report"]
   pkg_ui_report["ui-report"]
+  pkg_fs_remote["fs-remote"]
+  svc_files["ctx.files<br/>Browser-facing filesystem Remote"]
   pkg_typert_registry["typert-registry"]
   svc_typert["ctx.typert<br/>Runtime type registry"]
   pkg_typert_loader["typert-loader"]
@@ -231,6 +233,7 @@ flowchart LR
   pkg_fs --> svc_fs
   pkg_fs_e2b --> svc_fs
   pkg_fs_local --> svc_fs
+  pkg_fs_remote --> svc_files
   pkg_fs_sandbox --> svc_fs
   pkg_goal --> svc_goals
   pkg_invariants --> svc_invariants
@@ -435,6 +438,7 @@ flowchart LR
 | `ctx.invariants` | `core` | [`invariants`](../packages/runtime-diagnostics/invariants) | - | [`session`](../packages/core/session), [`agent`](../packages/core/agent), [`scope`](../packages/core/scope), [`agent-loop`](../packages/core/agent-loop) | - | Companion subpaths register owner-local checks; the service owns selection, uniqueness, child fibers, and package-attributed failures. |
 | `ctx.knowledgeBases` | `seam` | [`kb`](../packages/kb/kb) | [`kb-sqlite`](../packages/kb/kb-sqlite) | [`kb-agent`](../packages/kb/kb-agent) | - | Owns the named knowledge base set and its index state; the SQLite provider builds the FTS5 trigram index and the kb-agent consumer answers through a read-only subagent. |
 | `ctx.reports` | `seam` | [`report`](../packages/report/report) | [`report-local`](../packages/report/report-local) | [`tool-report`](../packages/report/tool-report), `ui-report` | - | Owns the published-report vocabulary and source deduplication; the local provider stores copies under the report root and the tool consumer exposes publish/list to the model. |
+| `ctx.files` | `core` | [`fs-remote`](../packages/fs/fs-remote) | - | - | - | Exposes path-based list/delete/move over ctx.fs so the web GUI can render a file tree and apply mutations; absolute paths cross the wire. |
 | `ctx.typert` | `core` | [`typert-registry`](../packages/typert/registry) | - | [`typert-loader`](../packages/typert/loader), [`api-gateway`](../packages/api/gateway) | - | Plugins register live zod contributions directly or through dsh-typert-loader; the API gateway consumes invocation descriptors and providers, while other runtime consumers query schemas and reflection metadata at their own edges. |
 | `ctx.typertGateway` | `core` | [`api-gateway`](../packages/api/gateway) | - | - | - | Associates generated Remote descriptors with live Cordis services, resolves registered identities, and exposes unary calls through the shared Connection RPC carrier. |
 | `ctx.sessionPersistence` | `seam` | [`session-persistence`](../packages/session/session-persistence) | [`session-persistence-jsonl`](../packages/session/session-persistence-jsonl), [`session-persistence-sqlite`](../packages/session/session-persistence-sqlite) | [`agent-loop`](../packages/core/agent-loop), [`tool-bash`](../packages/shell/tool-bash), [`hooks-claude-code`](../packages/hooks/hooks-claude-code), [`hooks-codex`](../packages/hooks/hooks-codex), [`session-query`](../packages/session-query/session-query), [`session-query-sqlite`](../packages/session-query/session-query-sqlite), [`message-feedback`](../packages/feedback/message-feedback) | - | Backends persist the same SessionEvent vocabulary; apps choose a backend at composition time. |

@@ -56,6 +56,8 @@ flowchart LR
   cfg --> plugin_dsh_base_report_local
   plugin_dsh_base_tool_report["tool-report<br/>@deepseek-ai/dsh-tool-report"]
   cfg --> plugin_dsh_base_tool_report
+  plugin_dsh_base_fs_remote["fs-remote<br/>@deepseek-ai/dsh-fs-remote"]
+  cfg --> plugin_dsh_base_fs_remote
   plugin_dsh_base_session_projection["session-projection<br/>@deepseek-ai/dsh-session-projection"]
   cfg --> plugin_dsh_base_session_projection
   plugin_dsh_base_session_telemetry_otel["session-telemetry-otel<br/>@deepseek-ai/dsh-session-telemetry-otel"]
@@ -200,6 +202,7 @@ flowchart LR
 | `kb-agent` | `@deepseek-ai/dsh-kb-agent` |
 | `report-local` | `@deepseek-ai/dsh-report-local` |
 | `tool-report` | `@deepseek-ai/dsh-tool-report` |
+| `fs-remote` | `@deepseek-ai/dsh-fs-remote` |
 | `session-projection` | `@deepseek-ai/dsh-session-projection` |
 | `session-telemetry-otel` | `@deepseek-ai/dsh-session-telemetry-otel` |
 | `subprocess` | `@deepseek-ai/dsh-subprocess-local` |

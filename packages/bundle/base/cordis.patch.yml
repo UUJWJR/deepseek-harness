@@ -142,6 +142,10 @@
     - id: tool-report
       name: '@deepseek-ai/dsh-tool-report'
 
+    # Browser filesystem Remote: path-based list/delete/move for the file tree.
+    - id: fs-remote
+      name: '@deepseek-ai/dsh-fs-remote'
+
     # Shared projection registry: subagent catalog identity (mode/label) folds
     # through its registered units, so the `list_agents` surface below fails
     # loud without it; web layers reuse this same mount for list rows.

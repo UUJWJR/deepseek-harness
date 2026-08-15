@@ -30,6 +30,13 @@ describe('FileSystem delete/move', () => {
     await expect(fs.stat(target)).resolves.toBeUndefined()
   })
 
+  it('deletes an empty directory', async () => {
+    await mkdir(join(dir, 'emptydir'))
+    const target = await fs.resolve('emptydir')
+    await fs.delete(target)
+    await expect(fs.stat(target)).resolves.toBeUndefined()
+  })
+
   it('rejects deleting a non-empty directory', async () => {
     await mkdir(join(dir, 'sub'))
     await writeFile(join(dir, 'sub', 'b.txt'), 'x')

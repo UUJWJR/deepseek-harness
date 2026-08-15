@@ -128,6 +128,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/session-query/session-query-sqlite': { kind: 'none', reason: 'The search backend returns hits only to callers and registers nothing model-facing.' },
   'packages/kb/kb': { kind: 'none', reason: 'The registry owns the named knowledge base set and returns snapshots and hints only to its callers; it registers no model-facing prompt, schema, tool, or message.' },
   'packages/kb/kb-sqlite': { kind: 'none', reason: 'The SQLite backend returns ranked retrieval hints only to callers and registers no model-facing prompt, schema, tool, or message.' },
+  'packages/fs/fs-remote': { kind: 'none', reason: 'The Remote returns directory listings and applies filesystem mutations only to its callers; it registers no model-facing prompt, schema, tool, or message.' },
   'packages/report/report': { kind: 'none', reason: 'The registry owns the published-report vocabulary and returns reports and tags only to its callers; it registers no model-facing prompt, schema, tool, or message.' },
   'packages/report/report-local': { kind: 'none', reason: 'The local backend returns published reports and tags only to callers and registers no model-facing prompt, schema, tool, or message.' },
   'packages/client/ui-report': { kind: 'none', reason: 'Browser-side gallery of published reports; renders durable report records without changing model context.' },

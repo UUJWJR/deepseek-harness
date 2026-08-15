@@ -165,6 +165,13 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Owns the published-report vocabulary and source deduplication; the local provider stores copies under the report root and the tool consumer exposes publish/list to the model.',
   },
   {
+    key: 'files',
+    pkg: 'fs-remote',
+    title: 'Browser-facing filesystem Remote',
+    mode: 'core',
+    note: 'Exposes path-based list/delete/move over ctx.fs so the web GUI can render a file tree and apply mutations; absolute paths cross the wire.',
+  },
+  {
     key: 'typert',
     pkg: 'typert-registry',
     title: 'Runtime type registry',

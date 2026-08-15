@@ -6,7 +6,7 @@
 
 import { Context } from '@deepseek-ai/cordis'
 import { constants as bufferConstants } from 'node:buffer'
-import { rename, rm } from 'node:fs/promises'
+import { rename, rm, rmdir } from 'node:fs/promises'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import z from '@deepseek-ai/schemastery'
@@ -229,8 +229,10 @@ export class LocalFileSystem extends FileSystem {
         if (entries.length > 0) {
           throw new FsError(`cannot delete "${target.displayPath}": directory is not empty`, 'FS_NOT_EMPTY')
         }
+        await rmdir(target.targetKey)
+      } else {
+        await rm(target.targetKey, { recursive: false, force: false })
       }
-      await rm(target.targetKey, { recursive: false, force: false })
     })
   }
 
