@@ -48,3 +48,9 @@ DeepSeek Harness 的领域词汇为每个概念规定一个规范术语。各术
 
 - **knowledge base（知识库）** — 一个命名的本地文档根目录（vault），其 markdown 被切分为以标题分隔的分片并做全文索引。它带 `ready | indexing | error` 索引状态。<a id="knowledge-base"></a>
 - **retrieval hint（检索提示）** — 一条带排名的全文检索候选：源文件路径加一段匹配摘录。提示是 agent 需通过阅读验证的起步线索，绝非答案素材。<a id="retrieval-hint"></a>
+
+## 权限窗口
+
+- **permission window（权限窗口）** — 部署可信技能执行期间，harness 自动批准该技能工具调用的有界时段，受 TTL、会话结束与硬批准上限约束。每笔授权仍由审批服务的审计对记录。<a id="permission-window"></a>
+- **trusted skill（可信技能）** — 部署的可信技能配置中命名的技能；加载它即打开权限窗口。信任是部署选择，绝非技能自声明。<a id="trusted-skill"></a>
+- **unattended level（无人值守等级）** — 技能声明的工具面等级（\`sandbox\` / \`networked\` / \`full\`），在定时无头运行时执行；等级之外的调用被拒绝，绝不询问。<a id="unattended-level"></a>

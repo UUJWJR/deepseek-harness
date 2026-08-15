@@ -48,3 +48,9 @@ Domain vocabulary for DeepSeek Harness uses one canonical term per concept. Term
 
 - **knowledge base** — a named local document root (a vault) whose markdown is split into heading-delimited chunks and full-text indexed. It carries a `ready | indexing | error` index state. <a id="knowledge-base"></a>
 - **retrieval hint** — a ranked full-text candidate: a source file path plus a short match snippet. A hint is a starting cue an agent verifies by reading, never answer material. <a id="retrieval-hint"></a>
+
+## permission window
+
+- **permission window** — the bounded period during a deployment-trusted skill's execution when the harness auto-approves the skill's tool calls, bounded by TTL, session end, and a hard approval cap. Every grant is still logged by the approval service's audit pair. <a id="permission-window"></a>
+- **trusted skill** — a skill named in the deployment's trusted-skill config; loading it opens a permission window. Trust is a deployment choice, never a skill self-declaration. <a id="trusted-skill"></a>
+- **unattended level** — a skill's declared tool-surface level (\`sandbox\` / \`networked\` / \`full\`) enforced during scheduled headless runs; a call outside the level is denied, never asked. <a id="unattended-level"></a>

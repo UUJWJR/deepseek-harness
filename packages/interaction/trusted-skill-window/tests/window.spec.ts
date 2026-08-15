@@ -3,9 +3,7 @@ import { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { ToolDispatchExecution, ToolExecutionResult } from '@deepseek-ai/dsh-tools'
 import ApprovalService from '@deepseek-ai/dsh-user-approval'
-import type { ApprovalRequest } from '@deepseek-ai/dsh-user-approval'
 import { apply as trustedSkillWindow } from '@deepseek-ai/dsh-trusted-skill-window'
-import type { Config } from '@deepseek-ai/dsh-trusted-skill-window'
 
 function fakeAgent(): Agent {
   return {
@@ -21,10 +19,10 @@ describe('trusted-skill-window', () => {
   it('auto-approves only inside a trusted skill window', async () => {
     const ctx = new Context()
     await ctx.plugin(ApprovalService)
-    trustedSkillWindow(ctx, { trustedSkills: ['report-publish'] } as Config)
+    trustedSkillWindow(ctx, { trustedSkills: ['report-publish'] })
 
     const agent = fakeAgent()
-    const ask = (toolName: string) => ctx.approval.request({ agent, toolName } as ApprovalRequest)
+    const ask = (toolName: string) => ctx.approval.request({ agent, toolName })
 
     // No window yet: fail closed.
     await expect(ask('bash')).resolves.toBe('unavailable')
@@ -46,7 +44,7 @@ describe('trusted-skill-window', () => {
   it('does not open for an untrusted skill', async () => {
     const ctx = new Context()
     await ctx.plugin(ApprovalService)
-    trustedSkillWindow(ctx, { trustedSkills: ['report-publish'] } as Config)
+    trustedSkillWindow(ctx, { trustedSkills: ['report-publish'] })
 
     const agent = fakeAgent()
     const exec = {
@@ -57,6 +55,6 @@ describe('trusted-skill-window', () => {
     } as unknown as ToolDispatchExecution
     await ctx.waterfall('tools/execute', exec, () => Promise.resolve({} as ToolExecutionResult))
 
-    await expect(ctx.approval.request({ agent, toolName: 'bash' } as ApprovalRequest)).resolves.toBe('unavailable')
+    await expect(ctx.approval.request({ agent, toolName: 'bash' })).resolves.toBe('unavailable')
   })
 })
