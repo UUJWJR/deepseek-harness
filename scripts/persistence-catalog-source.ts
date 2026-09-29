@@ -10,6 +10,42 @@ const root = resolve(import.meta.dirname, '..')
 /** The package that owns the durable event vocabulary. */
 const SESSION_PACKAGE = '@deepseek-ai/dsh-session'
 
+/**
+ * Read one discovered source file, or `undefined` when it is already gone.
+ *
+ * The `packages/<group>/<pkg>/src` globs match whatever is on disk when they run, and a probe
+ * another test writes into a package `src` directory can be removed before this scan reads it.
+ * Skipping a file that disappeared between the globs and this read keeps one run's scan over one
+ * coherent tree, rather than failing on a path the scan no longer owns.
+ *
+ * @param path - absolute path of a file the globs matched.
+ * @returns the file's text, or `undefined` when only its removal explains the failure.
+ */
+export function readSourceFile(path: string): string | undefined {
+  try {
+    return readFileSync(path, 'utf8')
+  } catch (error) {
+    // A file that is still present but unreadable — a directory, a permission failure, a symlink
+    // loop — is a real fault that must not be dropped from the scan.
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+    return undefined
+  }
+}
+
+/**
+ * Every source file this catalog scans, with the text read for it.
+ *
+ * @param scanRoot - repository root, or a fixture directory in tests.
+ * @returns each discovered path relative to `scanRoot`, paired with its text, in sorted order.
+ */
+function* discoveredSources(scanRoot: string): Generator<{ rel: string; text: string }> {
+  const paths = globSync('packages/*/*/src/**/*.{ts,tsx}', { cwd: scanRoot }).map(path => path.split(sep).join('/')).sort()
+  for (const rel of paths) {
+    const text = readSourceFile(resolve(scanRoot, rel))
+    if (text !== undefined) yield { rel, text }
+  }
+}
+
 /** The type-only module that plugin declaration merges augment. */
 const SESSION_TYPES_MODULE = '@deepseek-ai/dsh-session/types'
 
@@ -139,9 +175,8 @@ export function collectLogEvents(scanRoot: string = root): LogEventEntry[] {
   const violations: string[] = []
   const seen = new Map<string, string>()
   let owningDecl: string | null = null
-  for (const rel of globSync('packages/*/*/src/**/*.{ts,tsx}', { cwd: scanRoot }).map(s => s.split(sep).join('/')).sort()) {
+  for (const { rel, text } of discoveredSources(scanRoot)) {
     const abs = resolve(scanRoot, rel)
-    const text = readFileSync(abs, 'utf8')
     if (!text.includes('SessionEventMap')) continue
     const sf = ts.createSourceFile(abs, text, ts.ScriptTarget.Latest, true)
     for (const { decl, topLevel } of sessionEventMapDecls(sf)) {
@@ -217,9 +252,8 @@ export function collectEventEnvelopeTypes(scanRoot: string = root): EventEnvelop
   const found = new Map<EventEnvelopeTypeName, EventEnvelopeTypeEntry>()
   const violations: string[] = []
   const wanted = new Set<string>(EVENT_ENVELOPE_TYPE_NAMES)
-  for (const rel of globSync('packages/*/*/src/**/*.{ts,tsx}', { cwd: scanRoot }).map(s => s.split(sep).join('/')).sort()) {
+  for (const { rel, text } of discoveredSources(scanRoot)) {
     const abs = resolve(scanRoot, rel)
-    const text = readFileSync(abs, 'utf8')
     if (!EVENT_ENVELOPE_TYPE_NAMES.some(name => text.includes(name))) continue
     if (packageNameFor(rel, scanRoot) !== SESSION_PACKAGE) continue
     const sf = ts.createSourceFile(abs, text, ts.ScriptTarget.Latest, true)
@@ -263,9 +297,8 @@ export function collectEventEnvelopeTypes(scanRoot: string = root): EventEnvelop
  */
 export function collectSurfaceEventTypes(scanRoot: string = root): string[] {
   const found: { names: string[]; source: string }[] = []
-  for (const rel of globSync('packages/*/*/src/**/*.{ts,tsx}', { cwd: scanRoot }).map(s => s.split(sep).join('/')).sort()) {
+  for (const { rel, text } of discoveredSources(scanRoot)) {
     const abs = resolve(scanRoot, rel)
-    const text = readFileSync(abs, 'utf8')
     if (!text.includes('SurfaceEventType')) continue
     const sf = ts.createSourceFile(abs, text, ts.ScriptTarget.Latest, true)
     for (const stmt of sf.statements) {

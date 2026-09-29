@@ -1,9 +1,9 @@
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { collectLogEvents } from './gen-persistence-catalog.ts'
-import { extractPersistenceSchema } from './persistence-schema.ts'
+import { extractPersistenceSchema, readSourceRoots } from './persistence-schema.ts'
 import { classifyPersistenceChange, parsePersistenceSnapshot } from './persistence-changes.ts'
 import { canonicalizeSchema, isArbitraryJsonSchema, schemaDigest, type PersistenceSchemaInventory } from './persistence-schema-model.ts'
 
@@ -141,6 +141,28 @@ describe('persistent source type extraction', () => {
     expect(result.roots).toEqual(inventory.roots)
     expect(result.types.map(({ digest, schema }) => ({ digest, schema })))
       .toEqual(inventory.types.map(({ digest, schema }) => ({ digest, schema })))
+  })
+
+  it('ignores a source file the globs matched but that is gone when it is read', () => {
+    const root = fixture('export interface Payload {id: string}')
+    // A test that writes a temporary probe into a package src directory can remove it while this
+    // extraction runs. A dangling link reproduces the resulting state deterministically: the
+    // catalog globs list the path, and the read of it fails.
+    const probe = join(root, 'packages/domain/extension/src/probe.ts')
+    mkdirSync(dirname(probe), { recursive: true })
+    symlinkSync(join(root, 'removed.ts'), probe)
+    const inventory = extractPersistenceSchema(root)
+    expect(inventory.roots.some(root => root.key === 'event:test/record')).toBe(true)
+  })
+
+  it('compiles only the roots it read, so a root gone before compilation cannot fail the program', () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-persistence-schema-'))
+    roots.push(root)
+    put(root, 'packages/domain/payload/src/kept.ts', 'export interface Kept {id: string}\n')
+    const gone = join(root, 'packages/domain/payload/src/gone.ts')
+    symlinkSync(join(root, 'removed.ts'), gone)
+    const snapshot = readSourceRoots([join(root, 'packages/domain/payload/src/kept.ts'), gone])
+    expect([...snapshot.keys()]).toEqual([join(root, 'packages/domain/payload/src/kept.ts')])
   })
 
   it('materializes generic, conditional and mapped aliases into their concrete properties', () => {

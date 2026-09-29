@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-09-29-source-scan-reads-one-coherent-tree.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-29-source-scan-reads-one-coherent-tree.md
+/agent-note-the-persistence-source-scan-reads-one-coherent-tree:
+  en: 3edd3f04a6b3b24c
+  zh: 45911c51999f1aea
+/agent-note-the-persistence-source-scan-reads-one-coherent-tree/problem:
+  en: b583b3a5a1840986
+  zh: dc51e2a2cb92a194
+/agent-note-the-persistence-source-scan-reads-one-coherent-tree/decision:
+  en: bf980842518dcc54
+  zh: 440357b9003aac4c
+/agent-note-the-persistence-source-scan-reads-one-coherent-tree/alternatives-considered:
+  en: 64ddb73c047491a7
+  zh: 9c855d6683555b2b
+/agent-note-the-persistence-source-scan-reads-one-coherent-tree/consequences:
+  en: 13bdae5cb2ceeb9a
+  zh: b4eb435d62e1ee6d
+/agent-note-the-persistence-source-scan-reads-one-coherent-tree/related:
+  en: ac9bc7eb09f54abf
+  zh: d7feb6908e6591d4

@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs'
 import { dirname, extname, relative, resolve, sep } from 'node:path'
 import ts from 'typescript'
-import { collectLogEvents } from './persistence-catalog-source.ts'
+import { collectLogEvents, readSourceFile } from './persistence-catalog-source.ts'
 import { sourceCompatibilityAnnotations } from './persistence-source-annotations.ts'
 import { validSourceCompatibility } from './persistence-source-policy.ts'
 import {
@@ -74,17 +74,24 @@ export function extractPersistenceSchema(root: string): PersistenceSchemaInvento
     strict: true,
     exactOptionalPropertyTypes: true,
   }
+  const snapshot = readSourceRoots(hostSourceFiles(root, configPath))
+  const eventRoots = events.map(event => resolve(root, event.source.slice(0, event.source.lastIndexOf(':'))))
   const host = ts.createCompilerHost(options)
   const originalGetSourceFile = host.getSourceFile.bind(host)
-  host.getSourceFile = (path, languageVersion, onError, shouldCreateNewSourceFile) =>
-    resolve(path) === filename
-      ? ts.createSourceFile(filename, source, languageVersion, true)
-      : originalGetSourceFile(path, languageVersion, onError, shouldCreateNewSourceFile)
-  const files = [...new Set([
-    ...hostSourceFiles(root, configPath),
-    ...events.map(event => resolve(root, event.source.slice(0, event.source.lastIndexOf(':')))),
-  ])]
-  const program = ts.createProgram({ rootNames: [filename, ...files], options, host })
+  const originalFileExists = host.fileExists.bind(host)
+  const originalReadFile = host.readFile.bind(host)
+  host.getSourceFile = (path, languageVersion, onError, shouldCreateNewSourceFile) => {
+    const resolved = resolve(path)
+    const text = resolved === filename ? source : snapshot.get(resolved)
+    return text === undefined
+      ? originalGetSourceFile(path, languageVersion, onError, shouldCreateNewSourceFile)
+      : ts.createSourceFile(resolved, text, languageVersion, true)
+  }
+  // Root existence is answered from the snapshot too: TypeScript reports a root its host cannot
+  // find as TS6053 without ever asking for the text, which is the failure this snapshot prevents.
+  host.fileExists = path => snapshot.has(resolve(path)) || originalFileExists(path)
+  host.readFile = path => snapshot.get(resolve(path)) ?? originalReadFile(path)
+  const program = ts.createProgram({ rootNames: [filename, ...snapshot.keys(), ...eventRoots], options, host })
   const rootSource = program.getSourceFile(filename)
   if (rootSource === undefined) throw new PersistenceSchemaError('persistence schema: compiler omitted the requested roots')
   const diagnostics = [
@@ -137,6 +144,28 @@ export function extractPersistenceSchema(root: string): PersistenceSchemaInvento
   }
   roots.splice(2, 0, { key: 'SessionEventEnvelope', kind: 'envelope', node: extraction.union(envelopes) })
   return extraction.inventory(roots)
+}
+
+/**
+ * Read every source root discovered from the tsconfig graph, once, so the compiler sees one
+ * coherent tree.
+ *
+ * The tsconfig `include` globs match whatever is on disk when they run, and a probe another test
+ * writes into a package `src` directory can be removed before the program reads it. A root
+ * TypeScript cannot find becomes a TS6053 diagnostic, so a concurrent writer would replace this
+ * extraction's result with an unrelated failure. Compiling only the roots read here removes that
+ * dependency: a file listed by the globs but already gone never becomes a compiler root.
+ *
+ * @param paths - repository-absolute root paths discovered from the config graph.
+ * @returns each readable path mapped to its text, in discovery order.
+ */
+export function readSourceRoots(paths: Iterable<string>): Map<string, string> {
+  const roots = new Map<string, string>()
+  for (const path of paths) {
+    const text = readSourceFile(path)
+    if (text !== undefined) roots.set(path, text)
+  }
+  return roots
 }
 
 function hostSourceFiles(root: string, configPath: string, seen = new Set<string>()): string[] {
