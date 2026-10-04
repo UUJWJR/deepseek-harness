@@ -57,6 +57,6 @@ The extraction now reads every discovered root eagerly rather than letting TypeS
 
 ## Related
 
-- [Oxlint contract cases that spawn a process carry a 90 s ceiling](2026-09-27-oxlint-contract-spawn-case-budgets.md) bounds the same spec's process-spawning cases and records the lane arithmetic this change relies on: `DSH_COVERAGE_TEST_TIMEOUT_MS=90000` raises the coverage lanes, while a developer's `pnpm run test` runs on Vitest's default. It governs how long a case may take; this note governs which files a repository-wide scan owns.
+- The archived [Oxlint contract cases that spawn a process carry a 90 s ceiling](../../archived/testing/2026-09-27-oxlint-contract-spawn-case-budgets.md) bounds the same spec's process-spawning cases and records the lane arithmetic this change relies on: `DSH_COVERAGE_TEST_TIMEOUT_MS=90000` raises the coverage lanes, while a developer's `pnpm run test` runs on Vitest's default. It governs how long a case may take; this note governs which files a repository-wide scan owns.
 - [Windows-lane observations wait on the state they read](2026-09-27-observation-waits-on-observed-state.md) states the rule this change applies to a shared tree: an observation waits on the state it reads, not on a window that another actor can close.
-- [Web lane assertions name their input state](2026-09-27-web-lane-assertions-name-their-input-state.md) records the same class one layer out, where assertions sampled state a preceding action had not settled.
+- The archived [Web lane assertions name their input state](../../archived/testing/2026-09-27-web-lane-assertions-name-their-input-state.md) records the same class one layer out, where assertions sampled state a preceding action had not settled.

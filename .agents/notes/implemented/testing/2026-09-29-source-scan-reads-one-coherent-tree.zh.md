@@ -57,6 +57,6 @@ Status: implemented
 
 ## 相关
 
-- [会 spawn 进程的 Oxlint 契约用例携带 90 s 上限](2026-09-27-oxlint-contract-spawn-case-budgets.zh.md) 界定了同一个 spec 中会 spawn 进程的用例，并记录了本改动所依赖的通道算术：`DSH_COVERAGE_TEST_TIMEOUT_MS=90000` 抬高覆盖率通道，而开发者本机的 `pnpm run test` 跑在 Vitest 默认值上。它管的是一个用例可以耗多久；本笔记管的是仓库级扫描拥有哪些文件。
+- 已归档的[会 spawn 进程的 Oxlint 契约用例携带 90 s 上限](../../archived/testing/2026-09-27-oxlint-contract-spawn-case-budgets.md) 界定了同一个 spec 中会 spawn 进程的用例，并记录了本改动所依赖的通道算术：`DSH_COVERAGE_TEST_TIMEOUT_MS=90000` 抬高覆盖率通道，而开发者本机的 `pnpm run test` 跑在 Vitest 默认值上。它管的是一个用例可以耗多久；本笔记管的是仓库级扫描拥有哪些文件。
 - [Windows 通道的观察等待它读取的状态](2026-09-27-observation-waits-on-observed-state.zh.md) 陈述了本改动应用于共享树的规则：观察等待它读取的状态，而不是等待另一个参与者可以关闭的窗口。
-- [Web 通道断言点明其输入状态](2026-09-27-web-lane-assertions-name-their-input-state.zh.md) 记录了同一类问题在外一层的形态：断言采样了前序动作尚未落定的状态。
+- 已归档的[Web 通道断言点明其输入状态](../../archived/testing/2026-09-27-web-lane-assertions-name-their-input-state.md) 记录了同一类问题在外一层的形态：断言采样了前序动作尚未落定的状态。
