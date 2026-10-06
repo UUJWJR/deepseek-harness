@@ -8,7 +8,13 @@
  * @module @deepseek-ai/dsh-sdk-protocol/types
  */
 
-import type { ContentBlock, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
+import type {
+  ContentBlock,
+  ContentBlockType,
+  FinishReason,
+  ReasoningEffortId,
+  TokenUsage,
+} from '@deepseek-ai/dsh-llm'
 import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import type { SubagentStopReason } from '@deepseek-ai/dsh-subagent'
 
@@ -77,6 +83,65 @@ export interface SessionStatusNotification {
   status: 'idle' | 'running'
 }
 
+/**
+ * One raw adapter stream chunk inside a `session.assistant-stream` chunk frame:
+ * the block deltas (`block-start`, `text-delta`, `reasoning-delta`,
+ * `tool-call-delta`, `block-end`) plus terminal `usage` and `finish` data.
+ */
+export type SdkAssistantStreamChunk =
+  | { type: 'block-start'; index: number; blockType: ContentBlockType }
+  | { type: 'text-delta'; index: number; text: string }
+  | { type: 'reasoning-delta'; index: number; text: string }
+  | { type: 'tool-call-delta'; index: number; id: string; name?: string; argumentsDelta: string }
+  | { type: 'block-end'; index: number; block: ContentBlock }
+  | { type: 'usage'; usage: TokenUsage }
+  | { type: 'finish'; reason: FinishReason; replayState?: unknown }
+
+/**
+ * One process-local assistant attempt frame forwarded from the agent runtime.
+ * Fields are carried verbatim: `start` names the attempt's turn and step, chunk
+ * indexes are dense from zero, and `end.index` is the next chunk position.
+ */
+export type SdkAssistantStreamFrame =
+  | {
+    type: 'start'
+    /** Attempt identity unique within one agent lifecycle. */
+    attemptId: string
+    /** Monotone within one attached Agent lifecycle; replacement restarts at 1. */
+    revision: number
+    turn: number
+    step: number
+  }
+  | {
+    type: 'chunk'
+    attemptId: string
+    revision: number
+    /** Dense zero-based position within the attempt. */
+    index: number
+    /** Safe-integer timestamp reused by the durable embedded stream. */
+    time: number
+    chunk: SdkAssistantStreamChunk
+  }
+  | {
+    type: 'end'
+    attemptId: string
+    revision: number
+    /** Number of chunk frames emitted by this attempt. */
+    index: number
+    /** Durable settlement committed before this frame, or live abandonment without one. */
+    outcome:
+      | { kind: 'committed'; eventType: 'assistant/message' | 'assistant/attempt'; seq: number }
+      | { kind: 'abandoned' }
+  }
+
+/** `session.assistant-stream` payload: one live agent assistant-stream frame. */
+export interface SessionAssistantStreamNotification {
+  /** Session whose live agent produced the frame (every session in the runtime, not only SDK-created ones). */
+  sessionId: string
+  /** The live frame, forwarded verbatim. */
+  frame: SdkAssistantStreamFrame
+}
+
 /** `subagent.started` payload: an in-runtime child session was created. */
 export interface SubagentStartedNotification {
   /** The delegating session. */
@@ -107,6 +172,7 @@ export interface SubagentFinishedNotification {
 export interface HarnessSdkNotificationMap {
   'session.event': SessionEventNotification
   'session.status': SessionStatusNotification
+  'session.assistant-stream': SessionAssistantStreamNotification
   'subagent.started': SubagentStartedNotification
   'subagent.finished': SubagentFinishedNotification
 }

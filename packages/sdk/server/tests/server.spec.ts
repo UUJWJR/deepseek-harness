@@ -1,5 +1,5 @@
 import { MESSAGES_RESPONSE } from './messages-response.ts'
-import { createUserMessage, LlmAdapter, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
+import { createUserMessage, LlmAdapter, LlmAttemptId, ReasoningEffortId, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { GenerateOptions, LlmResolvedModelInfo, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { createServer } from 'node:http'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
@@ -8,11 +8,11 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { type Agent, type AgentHandle } from '@deepseek-ai/dsh-agent'
+import AgentRegistry, { type Agent, type AgentHandle, type AssistantStreamFrame } from '@deepseek-ai/dsh-agent'
 import AgentLoop from '@deepseek-ai/dsh-agent-loop'
 import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit'
 
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
+import SessionStore, { SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
 import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import * as LlmDeepSeek from '@deepseek-ai/dsh-llm-deepseek-api-key'
 import SubagentRuntime, { type SubagentResult, type SubagentRunEndInfo } from '@deepseek-ai/dsh-subagent'
@@ -369,6 +369,62 @@ describe('HarnessSdkJsonRpcServer', () => {
         { method: 'session.status', params: { sessionId: 'message-outcome', status: 'running' } },
         { method: 'session.status', params: { sessionId: 'message-outcome', status: 'idle' } },
       ])
+    await server.shutdown()
+    await ctx.fiber.dispose()
+  })
+
+  it('forwards live assistant-stream frames verbatim for the producing session', async () => {
+    const ctx = new Context()
+    await ctx.plugin(SessionStore)
+    await ctx.plugin(AgentRegistry)
+    const transport = new FakeTransport()
+    const server = new HarnessSdkJsonRpcServer(ctx, transport)
+    const session = ctx.sessions.create(SessionId('assistant-stream'))
+    const agent = ({
+      id: SessionId('assistant-stream'),
+      session,
+    } satisfies Pick<Agent, 'id' | 'session'>) as Agent
+    const attemptId = LlmAttemptId('assistant-stream:1')
+    const frames: AssistantStreamFrame[] = [
+      { type: 'start', attemptId, revision: 1, turn: 1, step: 1 },
+      {
+        type: 'chunk',
+        attemptId,
+        revision: 2,
+        index: 0,
+        time: 1730000000000,
+        chunk: { type: 'text-delta', index: 0, text: 'hello' },
+      },
+      {
+        type: 'chunk',
+        attemptId,
+        revision: 3,
+        index: 1,
+        time: 1730000000001,
+        chunk: {
+          type: 'tool-call-delta',
+          index: 1,
+          id: ToolCallId('call-1'),
+          name: 'read',
+          argumentsDelta: '{"path":"a.txt"}',
+        },
+      },
+      {
+        type: 'end',
+        attemptId,
+        revision: 4,
+        index: 2,
+        outcome: { kind: 'committed', eventType: 'assistant/message', seq: SessionSeq(9) },
+      },
+    ]
+
+    for (const frame of frames) ctx.emit('agent/assistant-stream', { agent, frame })
+
+    expect(transport.notifications.filter(notification => notification.method === 'session.assistant-stream'))
+      .toEqual(frames.map(frame => ({
+        method: 'session.assistant-stream',
+        params: { sessionId: 'assistant-stream', frame },
+      })))
     await server.shutdown()
     await ctx.fiber.dispose()
   })
@@ -1199,6 +1255,6 @@ describe('HarnessSdkJsonRpcServer', () => {
     const server = new HarnessSdkJsonRpcServer(ctx, new FakeTransport())
 
     await expect(server.shutdown()).rejects.toBe(listenerFailure)
-    expect(on).toHaveBeenCalledTimes(4)
+    expect(on).toHaveBeenCalledTimes(5)
   })
 })
