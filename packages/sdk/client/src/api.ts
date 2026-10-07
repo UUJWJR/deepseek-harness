@@ -28,6 +28,7 @@ export class DeepSeekHarness implements AsyncDisposable {
   private readonly reasoningEffort: DeepSeekHarnessOptions['reasoningEffort']
   private readonly maxTokens: number | undefined
   private initialized: Promise<void> | undefined
+  private handshakeCapabilities: { notifications: readonly string[] } | undefined
   private closed = false
 
   /** @param options - dsh launch configuration plus the session route, effort, and output cap. */
@@ -70,15 +71,17 @@ export class DeepSeekHarness implements AsyncDisposable {
     this.initialized ??= (async () => {
       try {
         this.clientInstance.start()
-        await this.clientInstance.initialize({
+        const handshake = await this.clientInstance.initialize({
           cwd: this.cwd,
           provider: this.provider,
           model: this.model,
           ...this.reasoningEffort === undefined ? {} : { reasoningEffort: this.reasoningEffort },
           ...this.maxTokens === undefined ? {} : { maxTokens: this.maxTokens },
         })
+        this.handshakeCapabilities = handshake.capabilities
       } catch (error) {
         this.initialized = undefined
+        this.handshakeCapabilities = undefined
         try {
           await this.clientInstance.close()
         } catch (cleanupError: unknown) {
@@ -92,6 +95,16 @@ export class DeepSeekHarness implements AsyncDisposable {
       }
     })()
     return this.initialized
+  }
+
+  /**
+   * The runtime's advertised notification methods from the initialize
+   * handshake. Empty before {@link start} succeeds or on a runtime that
+   * advertises no capabilities.
+   * @returns the advertised notification method names.
+   */
+  capabilities(): { notifications: readonly string[] } {
+    return this.handshakeCapabilities ?? { notifications: [] }
   }
 
   /**

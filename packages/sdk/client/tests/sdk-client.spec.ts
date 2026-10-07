@@ -397,6 +397,20 @@ describe('DeepSeekHarness', () => {
     await expect(captured.run('after')).rejects.toThrow(TransportClosedError)
   })
 
+  it('reports no capabilities before start and for a legacy runtime', async () => {
+    const harness = harnessWith()
+    expect(harness.capabilities()).toEqual({ notifications: [] })
+    await harness.start()
+    expect(harness.capabilities()).toEqual({ notifications: [] })
+  })
+
+  it('exposes the runtime notification capabilities advertised at handshake', async () => {
+    const harness = harnessWith({ FAKE_INIT_CAPABILITIES: 'session.event,session.status' })
+    expect(harness.capabilities()).toEqual({ notifications: [] })
+    await harness.start()
+    expect(harness.capabilities()).toEqual({ notifications: ['session.event', 'session.status'] })
+  })
+
   it('constructs the public dsh-backed client lazily', async () => {
     const harness = new DeepSeekHarness()
     expect(harness.client).toBeInstanceOf(HarnessClient)
@@ -465,6 +479,21 @@ describe('HarnessClient', () => {
     cleanups.push(() => client.close())
     await expect(client.prompt('s', normalizeInput('hi'))).rejects.toThrow(SdkProtocolError)
     await client.close()
+  })
+
+  it('passes handshake capabilities through, falling back to none for a legacy runtime', async () => {
+    const legacy = processClient(fakeLaunch())
+    cleanups.push(() => legacy.close())
+    const legacyIdentity = await legacy.initialize({ cwd: process.cwd(), provider: 'p', model: 'm' })
+    expect(legacyIdentity.serverInfo.name).toBe('deepseek-harness-sdk-runtime')
+    expect(legacyIdentity.capabilities).toEqual({ notifications: [] })
+    await legacy.close()
+
+    const advertising = processClient(fakeLaunch({ FAKE_INIT_CAPABILITIES: 'session.event,subagent.finished' }))
+    cleanups.push(() => advertising.close())
+    const identity = await advertising.initialize({ cwd: process.cwd(), provider: 'p', model: 'm' })
+    expect(identity.capabilities).toEqual({ notifications: ['session.event', 'subagent.finished'] })
+    await advertising.close()
   })
 
   it('fails pending requests with exit code and stderr tail when the runtime dies', async () => {

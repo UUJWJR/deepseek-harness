@@ -36,6 +36,8 @@ export interface InitializeParams {
 export interface InitializeResult {
   /** Wire-stable server identity (`deepseek-harness-sdk-runtime`) and version. */
   serverInfo: { name: string; version: string }
+  /** Notification methods this server can emit (capability advertisement). */
+  capabilities: { notifications: readonly string[] }
 }
 
 /** One user turn on one SDK session. */

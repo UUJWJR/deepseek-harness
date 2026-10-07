@@ -279,7 +279,15 @@ export class HarnessClient {
       || typeof result.serverInfo.name !== 'string' || typeof result.serverInfo.version !== 'string') {
       throw new SdkProtocolError(`initialize returned no server identity: ${JSON.stringify(result)}`)
     }
-    return { serverInfo: { name: result.serverInfo.name, version: result.serverInfo.version } }
+    // Pre-capability runtimes omit `capabilities`; absence advertises nothing.
+    const advertised = isRecord(result.capabilities) ? result.capabilities.notifications : undefined
+    const notifications = Array.isArray(advertised)
+      ? advertised.filter((method): method is string => typeof method === 'string')
+      : []
+    return {
+      serverInfo: { name: result.serverInfo.name, version: result.serverInfo.version },
+      capabilities: { notifications },
+    }
   }
 
   /**

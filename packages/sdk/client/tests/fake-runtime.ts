@@ -20,6 +20,9 @@
  * - `FAKE_INIT_ERROR_ONCE_FILE`: fail `initialize` (code 7) only when this
  *   marker file does NOT exist yet, creating it — so the first runtime
  *   process fails the handshake and a respawned one succeeds (retry probe).
+ * - `FAKE_INIT_CAPABILITIES`: comma-separated notification methods advertised in
+ *   the initialize result; omitted means a pre-capability runtime that sends no
+ *   `capabilities` member.
  * - `FAKE_ECHO_CWD_IN_INIT`: reply `serverInfo.version` = this process's cwd
  *   (wire-visible spawn-cwd probe).
  * - `FAKE_MALFORMED_EVENT`: the turn's `session.event` carries a number as
@@ -220,6 +223,16 @@ function sessionIdOf(params: Record<string, unknown> | undefined): string {
   return typeof value === 'string' ? value : ''
 }
 
+/** Advertised capabilities for the initialize result; empty for legacy fakes. */
+function capabilitiesField(): object {
+  if (env.FAKE_INIT_CAPABILITIES === undefined) return {}
+  return {
+    capabilities: {
+      notifications: env.FAKE_INIT_CAPABILITIES.split(',').filter(entry => entry.length > 0),
+    },
+  }
+}
+
 const reader = createInterface({ input: process.stdin })
 reader.on('line', (line) => {
   if (line.trim().length === 0) return
@@ -255,10 +268,10 @@ reader.on('line', (line) => {
         return
       }
       if (env.FAKE_ECHO_CWD_IN_INIT !== undefined) {
-        respond({ serverInfo: { name: 'deepseek-harness-sdk-runtime', version: process.cwd() } })
+        respond({ serverInfo: { name: 'deepseek-harness-sdk-runtime', version: process.cwd() }, ...capabilitiesField() })
         return
       }
-      respond({ serverInfo: { name: 'deepseek-harness-sdk-runtime', version: '0.0.1' } })
+      respond({ serverInfo: { name: 'deepseek-harness-sdk-runtime', version: '0.0.1' }, ...capabilitiesField() })
       return
     case 'session/prompt': {
       const sessionId = sessionIdOf(frame.params)

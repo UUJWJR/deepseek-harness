@@ -179,7 +179,18 @@ describe('dsh-sdk-jsonrpc-server plugin apply', () => {
       expect(response).toEqual({
         jsonrpc: '2.0',
         id: 'init-1',
-        result: { serverInfo: { name: 'deepseek-harness-sdk-runtime', version: '0.0.1' } },
+        result: {
+          serverInfo: { name: 'deepseek-harness-sdk-runtime', version: '0.0.1' },
+          capabilities: {
+            notifications: [
+              'session.event',
+              'session.status',
+              'session.assistant-stream',
+              'subagent.started',
+              'subagent.finished',
+            ],
+          },
+        },
       })
       expect(harness.exits()).toEqual([])
     } finally {

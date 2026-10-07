@@ -17,6 +17,7 @@ import type SubagentRuntime from '@deepseek-ai/dsh-subagent'
 import type { SubagentRunEndInfo } from '@deepseek-ai/dsh-subagent'
 import * as LlmDeepSeek from '@deepseek-ai/dsh-llm-deepseek-api-key'
 import type {
+  HarnessSdkNotificationMap,
   InitializeParams,
   InitializeResult,
   JsonRpcTransportPeer,
@@ -27,6 +28,18 @@ import type {
   SubagentFinishedNotification,
   SubagentStartedNotification,
 } from '@deepseek-ai/dsh-sdk-protocol'
+
+/**
+ * Notification methods this server advertises and emits. Adding or removing a
+ * `transport.notify` call in the constructor requires the same change here.
+ */
+export const SERVER_NOTIFICATION_METHODS: readonly (keyof HarnessSdkNotificationMap)[] = [
+  'session.event',
+  'session.status',
+  'session.assistant-stream',
+  'subagent.started',
+  'subagent.finished',
+]
 
 interface SessionRecord {
   handle: AgentHandle
@@ -170,7 +183,10 @@ export class HarnessSdkJsonRpcServer {
     this.reasoningEffort = reasoningEffort
     this.maxTokens = params.maxTokens
     this.initialized = true
-    return { serverInfo: { name: 'deepseek-harness-sdk-runtime', version: '0.0.1' } }
+    return {
+      serverInfo: { name: 'deepseek-harness-sdk-runtime', version: '0.0.1' },
+      capabilities: { notifications: [...SERVER_NOTIFICATION_METHODS] },
+    }
   }
 
   /**

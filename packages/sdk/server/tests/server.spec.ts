@@ -17,7 +17,7 @@ import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import * as LlmDeepSeek from '@deepseek-ai/dsh-llm-deepseek-api-key'
 import SubagentRuntime, { type SubagentResult, type SubagentRunEndInfo } from '@deepseek-ai/dsh-subagent'
 import type { JsonRpcTransportPeer } from '@deepseek-ai/dsh-sdk-protocol'
-import { HarnessSdkJsonRpcServer } from '../src/index.ts'
+import { HarnessSdkJsonRpcServer, SERVER_NOTIFICATION_METHODS } from '../src/index.ts'
 
 class FakeTransport implements JsonRpcTransportPeer {
   notifications: { method: string; params?: Record<string, unknown> }[] = []
@@ -174,6 +174,31 @@ describe('HarnessSdkJsonRpcServer', () => {
       expect(llmServer.requests).toHaveLength(3)
 
       await server.handleRequest('shutdown', undefined)
+    } finally {
+      await ctx.fiber.dispose()
+      await rm(storageDir, { recursive: true, force: true })
+    }
+  })
+
+  it('advertises exactly the notification methods its subscriptions emit', async () => {
+    const storageDir = await mkdtemp(join(tmpdir(), 'dsh-jsonrpc-capabilities-'))
+    vi.stubEnv('DEEPSEEK_API_KEY', 'test-key')
+    const ctx = await makeHarness(storageDir)
+    try {
+      const server = new HarnessSdkJsonRpcServer(ctx, new FakeTransport())
+      const init = await server.initialize({ cwd: storageDir, provider: 'deepseek-official', model: 'capability-model' })
+
+      expect(SERVER_NOTIFICATION_METHODS).toEqual([
+        'session.event',
+        'session.status',
+        'session.assistant-stream',
+        'subagent.started',
+        'subagent.finished',
+      ])
+      expect(init.capabilities.notifications).toEqual([...SERVER_NOTIFICATION_METHODS])
+      expect(init.capabilities.notifications).toContain('session.assistant-stream')
+
+      await server.shutdown()
     } finally {
       await ctx.fiber.dispose()
       await rm(storageDir, { recursive: true, force: true })
